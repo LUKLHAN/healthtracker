@@ -2145,7 +2145,7 @@ function loadData() {
 
 /** POST ไป Apps Script */
 async function syncToSheets(action, data) {
-  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_WEB_APP_URL') return;
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbxHG87VFMesL8gebR2KlyXWj_kVcjAnX1UR0Z1yb4VrdU5m3_pGcRAseLzZBo8sLh67gg/exec') return;
   try {
     const res = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
@@ -2162,7 +2162,7 @@ async function syncToSheets(action, data) {
 
 /** GET จาก Apps Script */
 async function fetchFromSheets(action, params = {}) {
-  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_WEB_APP_URL') return null;
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbxHG87VFMesL8gebR2KlyXWj_kVcjAnX1UR0Z1yb4VrdU5m3_pGcRAseLzZBo8sLh67gg/exec') return null;
   try {
     const qs  = new URLSearchParams({ action, ...params }).toString();
     const res = await fetch(`${APPS_SCRIPT_URL}?${qs}`);
