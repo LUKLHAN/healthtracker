@@ -2124,7 +2124,7 @@ let charts = {};
 // ══════════════════════════════
 // CONFIG — ใส่ URL Apps Script ที่นี่
 // ══════════════════════════════
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxHG87VFMesL8gebR2KlyXWj_kVcjAnX1UR0Z1yb4VrdU5m3_pGcRAseLzZBo8sLh67gg/exec=get_profile'; // ← วาง URL ที่นี่หลัง Deploy
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxHG87VFMesL8gebR2KlyXWj_kVcjAnX1UR0Z1yb4VrdU5m3_pGcRAseLzZBo8sLh67gg/exec'; // ← วาง URL ที่นี่หลัง Deploy
 
 // ══════════════════════════════
 // STORAGE — localStorage + Google Sheets sync
@@ -2145,7 +2145,7 @@ function loadData() {
 
 /** POST ไป Apps Script */
 async function syncToSheets(action, data) {
-  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbxHG87VFMesL8gebR2KlyXWj_kVcjAnX1UR0Z1yb4VrdU5m3_pGcRAseLzZBo8sLh67gg/exec=get_profile') return;
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbxHG87VFMesL8gebR2KlyXWj_kVcjAnX1UR0Z1yb4VrdU5m3_pGcRAseLzZBo8sLh67gg/exec') return;
   try {
     const res = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
@@ -2162,7 +2162,7 @@ async function syncToSheets(action, data) {
 
 /** GET จาก Apps Script */
 async function fetchFromSheets(action, params = {}) {
-  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbxHG87VFMesL8gebR2KlyXWj_kVcjAnX1UR0Z1yb4VrdU5m3_pGcRAseLzZBo8sLh67gg/exec=get_profile') return null;
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbxHG87VFMesL8gebR2KlyXWj_kVcjAnX1UR0Z1yb4VrdU5m3_pGcRAseLzZBo8sLh67gg/exec') return null;
   try {
     const qs  = new URLSearchParams({ action, ...params }).toString();
     const res = await fetch(`${APPS_SCRIPT_URL}?${qs}`);
@@ -2620,7 +2620,6 @@ function saveBP() {
   syncToSheets('save_bp', entry).then(ok => {
     showToast(ok ? '✓ บันทึกความดัน + sync แล้ว! 📊' : '✓ บันทึกแล้ว (offline)');
   });
-}
 }
 
 function updateBPDisplay(entry) {
