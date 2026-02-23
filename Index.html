@@ -1,0 +1,2971 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PIMOU — Weight Loss Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  /* Force Poppins with multiple fallbacks */
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+  
+  html, body, * {
+    font-family: 'Poppins', -apple-system, 'Segoe UI', Roboto, sans-serif !important;
+  }
+  :root {
+    --green-900: #1a3a2a;
+    --green-800: #1e4d35;
+    --green-700: #1b5e42;
+    --green-600: #2d7a56;
+    --green-500: #3a9668;
+    --green-400: #52b07e;
+    --green-300: #7ecba0;
+    --green-200: #b2e0c8;
+    --green-100: #e0f4ec;
+    --green-50:  #f2fbf6;
+    --accent:    #00e676;
+    --warn:      #ff6b6b;
+    --warn-soft: #fff0f0;
+    --gold:      #ffc947;
+    --text-dark: #0f1f18;
+    --text-mid:  #3a5a48;
+    --text-soft: #7aa08a;
+    --bg:        #f4faf7;
+    --card:      #ffffff;
+    --border:    #d4eddf;
+    --shadow:    0 4px 24px rgba(27,94,66,0.10);
+    --shadow-lg: 0 12px 40px rgba(27,94,66,0.18);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--bg);
+    color: var(--text-dark);
+    min-height: 100vh;
+    max-width: 430px;
+    margin: 0 auto;
+    overflow-x: hidden;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display:none; min-height:100vh; flex-direction:column; }
+  .screen.active { display:flex; }
+
+  /* ── ONBOARDING ── */
+  #screen-welcome {
+    background: linear-gradient(160deg, var(--green-900) 0%, var(--green-700) 55%, var(--green-500) 100%);
+    align-items: center;
+    justify-content: center;
+    padding: 40px 32px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  #screen-welcome::before {
+    content: '';
+    position: absolute;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+    top: -80px; right: -80px;
+  }
+  #screen-welcome::after {
+    content: '';
+    position: absolute;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(0,230,118,0.08);
+    bottom: 60px; left: -60px;
+  }
+  .welcome-logo {
+    width: 80px; height: 80px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 24px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px;
+    margin: 0 auto 28px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.15);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  }
+  .welcome-title {
+    font-size: 42px; font-weight: 800;
+    color: #fff;
+    letter-spacing: -1px;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .welcome-sub {
+    font-size: 13px; font-weight: 400;
+    color: rgba(255,255,255,0.6);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+  .welcome-desc {
+    font-size: 15px; color: rgba(255,255,255,0.75);
+    line-height: 1.7;
+    margin-bottom: 48px;
+  }
+
+  /* ── ONBOARDING STEPS ── */
+  #screen-onboard {
+    background: var(--bg);
+    padding: 0;
+  }
+  .onboard-header {
+    background: linear-gradient(135deg, var(--green-900), var(--green-700));
+    padding: 56px 28px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .onboard-header::after {
+    content: '';
+    position: absolute;
+    width: 150px; height: 150px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    bottom: -40px; right: -20px;
+  }
+  .step-label {
+    font-size: 11px; font-weight: 600;
+    color: var(--green-300);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .onboard-title {
+    font-size: 26px; font-weight: 700;
+    color: #fff;
+    line-height: 1.25;
+  }
+  .progress-dots {
+    display: flex; gap: 6px;
+    margin-top: 20px;
+  }
+  .dot {
+    height: 4px; border-radius: 2px;
+    background: rgba(255,255,255,0.25);
+    transition: all 0.3s;
+  }
+  .dot.active { background: var(--accent); width: 24px !important; }
+  .dot.done { background: rgba(255,255,255,0.5); }
+
+  .onboard-body { padding: 28px 24px; flex: 1; overflow-y: auto; }
+
+  /* ── FORM ELEMENTS ── */
+  .field-group { margin-bottom: 20px; }
+  .field-label {
+    font-size: 12px; font-weight: 600;
+    color: var(--text-soft);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .field-input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 15px;
+    color: var(--text-dark);
+    background: var(--card);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+  }
+  .field-input:focus {
+    border-color: var(--green-500);
+    box-shadow: 0 0 0 3px rgba(58,150,104,0.12);
+  }
+  .field-hint {
+    font-size: 11px; color: var(--text-soft);
+    margin-top: 5px;
+  }
+  .field-row { display: flex; gap: 12px; }
+  .field-row .field-group { flex: 1; }
+
+  .toggle-group { display: flex; gap: 8px; }
+  .toggle-btn {
+    flex: 1; padding: 12px 8px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    background: var(--card);
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px; font-weight: 500;
+    color: var(--text-mid);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .toggle-btn.active {
+    background: var(--green-900);
+    border-color: var(--green-900);
+    color: #fff;
+  }
+
+  .checkbox-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .checkbox-item.checked {
+    border-color: var(--green-500);
+    background: var(--green-50);
+  }
+  .checkbox-box {
+    width: 20px; height: 20px;
+    border-radius: 6px;
+    border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .checkbox-item.checked .checkbox-box {
+    background: var(--green-700);
+    border-color: var(--green-700);
+    color: #fff;
+  }
+  .checkbox-label { font-size: 14px; font-weight: 500; }
+
+  .calc-result {
+    background: linear-gradient(135deg, var(--green-900), var(--green-700));
+    border-radius: 18px;
+    padding: 20px;
+    margin: 16px 0;
+    color: #fff;
+  }
+  .calc-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; }
+  .calc-label { font-size: 12px; color: rgba(255,255,255,0.65); }
+  .calc-value { font-size: 16px; font-weight: 700; }
+  .calc-value.accent { color: var(--accent); }
+  .calc-divider { border: none; border-top: 1px solid rgba(255,255,255,0.12); margin: 8px 0; }
+
+  /* ── BUTTONS ── */
+  .btn-primary {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--green-700), var(--green-900));
+    color: #fff;
+    border: none;
+    border-radius: 16px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px; font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 6px 20px rgba(27,94,66,0.35);
+  }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-secondary {
+    width: 100%;
+    padding: 14px;
+    background: transparent;
+    color: var(--text-soft);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px; font-weight: 500;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+
+  /* ── MAIN APP LAYOUT ── */
+  #screen-app { background: var(--bg); padding-bottom: 80px; }
+
+  /* TOP BAR */
+  .topbar {
+    background: linear-gradient(135deg, var(--green-900) 0%, var(--green-700) 100%);
+    padding: 52px 24px 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .topbar::before {
+    content: '';
+    position: absolute;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+    top: -60px; right: -40px;
+  }
+  .topbar-row { display: flex; justify-content: space-between; align-items: flex-start; }
+  .topbar-greeting { font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 2px; }
+  .topbar-name { font-size: 22px; font-weight: 700; color: #fff; }
+  .topbar-avatar {
+    width: 44px; height: 44px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+
+  /* GOAL CARD in topbar */
+  .goal-bar-wrap { margin-top: 20px; }
+  .goal-bar-label { display: flex; justify-content: space-between; margin-bottom: 8px; }
+  .goal-bar-label span { font-size: 12px; color: rgba(255,255,255,0.65); }
+  .goal-bar-label strong { font-size: 12px; color: #fff; }
+  .goal-bar-track {
+    height: 6px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .goal-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #00c853);
+    border-radius: 3px;
+    transition: width 1s ease;
+  }
+  .goal-tags { display: flex; gap: 8px; margin-top: 14px; }
+  .goal-tag {
+    padding: 4px 10px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 20px;
+    font-size: 11px; color: rgba(255,255,255,0.75);
+    border: 1px solid rgba(255,255,255,0.12);
+  }
+
+  /* CONTENT SCROLL */
+  .content { padding: 20px 20px; }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-size: 13px; font-weight: 700;
+    color: var(--text-soft);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    margin-top: 24px;
+  }
+  .section-title:first-child { margin-top: 0; }
+
+  /* TODAY CHECKLIST */
+  .checklist-wrap { display: flex; flex-direction: column; gap: 8px; }
+  .check-item {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--card);
+    border-radius: 16px;
+    padding: 14px 16px;
+    border: 1.5px solid var(--border);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .check-item.done {
+    border-color: var(--green-200);
+    background: var(--green-50);
+  }
+  .check-circle {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .check-item.done .check-circle {
+    background: var(--green-700);
+    border-color: var(--green-700);
+    color: #fff;
+  }
+  .check-info { flex: 1; }
+  .check-name { font-size: 14px; font-weight: 600; color: var(--text-dark); }
+  .check-time { font-size: 11px; color: var(--text-soft); margin-top: 1px; }
+  .check-item.done .check-name { color: var(--text-soft); text-decoration: line-through; }
+
+  /* STAT CARDS */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .stat-card {
+    background: var(--card);
+    border-radius: 18px;
+    padding: 18px 16px;
+    border: 1.5px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    background: var(--green-100);
+    right: -15px; bottom: -15px;
+  }
+  .stat-icon { font-size: 20px; margin-bottom: 8px; }
+  .stat-label { font-size: 11px; color: var(--text-soft); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-value { font-size: 24px; font-weight: 800; color: var(--text-dark); line-height: 1.1; }
+  .stat-unit { font-size: 12px; color: var(--text-soft); font-weight: 400; }
+  .stat-delta {
+    font-size: 11px; font-weight: 600;
+    margin-top: 4px;
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+  .stat-delta.down { background: var(--green-100); color: var(--green-700); }
+  .stat-delta.up { background: var(--warn-soft); color: var(--warn); }
+  .stat-delta.ok { background: var(--green-100); color: var(--green-700); }
+
+  /* BP CARD */
+  .bp-card {
+    background: var(--card);
+    border-radius: 18px;
+    padding: 18px;
+    border: 1.5px solid var(--border);
+    margin-bottom: 12px;
+  }
+  .bp-card-title { font-size: 13px; font-weight: 600; color: var(--text-mid); margin-bottom: 14px; }
+  .bp-readings { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .bp-reading {
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+  .bp-reading-label { font-size: 10px; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.5px; }
+  .bp-reading-val { font-size: 20px; font-weight: 800; color: var(--text-dark); }
+  .bp-reading-val.warn { color: var(--warn); }
+  .bp-reading-sub { font-size: 10px; color: var(--text-soft); }
+
+  /* MINI CHART */
+  .chart-card {
+    background: var(--card);
+    border-radius: 18px;
+    padding: 18px;
+    border: 1.5px solid var(--border);
+  }
+  .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .chart-title { font-size: 14px; font-weight: 700; color: var(--text-dark); }
+  .chart-tabs { display: flex; gap: 4px; }
+  .chart-tab {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+    cursor: pointer;
+    color: var(--text-soft);
+    background: transparent;
+    border: none;
+    font-family: 'Poppins', sans-serif;
+  }
+  .chart-tab.active { background: var(--green-900); color: #fff; }
+  canvas { max-width: 100%; }
+
+  /* WEEKLY PLAN */
+  .week-scroll { overflow-x: auto; padding-bottom: 4px; }
+  .week-scroll::-webkit-scrollbar { display: none; }
+  .week-days { display: flex; gap: 10px; width: max-content; padding: 2px 0; }
+  .day-card {
+    width: 76px;
+    background: var(--card);
+    border-radius: 16px;
+    padding: 14px 10px;
+    text-align: center;
+    border: 1.5px solid var(--border);
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .day-card.today {
+    background: linear-gradient(135deg, var(--green-900), var(--green-700));
+    border-color: var(--green-700);
+  }
+  .day-card.today .day-name,
+  .day-card.today .day-activity { color: rgba(255,255,255,0.7); }
+  .day-card.today .day-num { color: #fff; }
+  .day-name { font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--text-soft); letter-spacing: 0.5px; }
+  .day-num { font-size: 20px; font-weight: 800; color: var(--text-dark); margin: 4px 0; }
+  .day-icons { display: flex; gap: 3px; justify-content: center; flex-wrap: wrap; margin: 4px 0; }
+  .day-icon { font-size: 11px; }
+  .day-activity { font-size: 9px; color: var(--text-soft); line-height: 1.3; }
+  .day-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin: 4px auto 0;
+  }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 100%; max-width: 430px;
+    background: rgba(255,255,255,0.96);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    display: flex;
+    padding: 10px 8px 20px;
+    z-index: 100;
+  }
+  .nav-item {
+    flex: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 3px;
+    cursor: pointer;
+    padding: 6px 4px;
+    border-radius: 12px;
+    transition: all 0.2s;
+  }
+  .nav-item.active { background: var(--green-50); }
+  .nav-icon { font-size: 20px; }
+  .nav-label { font-size: 10px; font-weight: 600; color: var(--text-soft); }
+  .nav-item.active .nav-label { color: var(--green-700); }
+
+  /* LOG TAB */
+  .log-section { display: none; }
+  .log-section.active { display: block; }
+
+  .log-tabs { display: flex; gap: 6px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px; }
+  .log-tabs::-webkit-scrollbar { display: none; }
+  .log-tab {
+    padding: 8px 16px;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px; font-weight: 600;
+    color: var(--text-soft);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .log-tab.active {
+    background: var(--green-900);
+    border-color: var(--green-900);
+    color: #fff;
+  }
+
+  /* FOOD LOG */
+  .meal-block {
+    background: var(--card);
+    border-radius: 18px;
+    border: 1.5px solid var(--border);
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .meal-header {
+    padding: 14px 16px;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .meal-icon { font-size: 20px; }
+  .meal-title { font-size: 14px; font-weight: 700; flex: 1; }
+  .meal-cal { font-size: 13px; font-weight: 700; color: var(--green-600); }
+  .meal-items { padding: 8px 16px; }
+  .meal-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .meal-item:last-child { border: none; }
+  .meal-item-name { font-size: 13px; }
+  .meal-item-cal { font-size: 12px; color: var(--text-soft); font-weight: 600; }
+  .add-food-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 16px;
+    color: var(--green-600);
+    font-size: 13px; font-weight: 600;
+    cursor: pointer;
+    border: none; background: none;
+    font-family: 'Poppins', sans-serif;
+    width: 100%;
+  }
+
+  /* CAL SUMMARY BAR */
+  .cal-summary {
+    background: linear-gradient(135deg, var(--green-900), var(--green-700));
+    border-radius: 18px;
+    padding: 18px;
+    margin-bottom: 16px;
+    color: #fff;
+  }
+  .cal-row { display: flex; justify-content: space-between; margin-bottom: 12px; }
+  .cal-item { text-align: center; }
+  .cal-item-val { font-size: 22px; font-weight: 800; }
+  .cal-item-label { font-size: 10px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.5px; }
+  .cal-track { height: 8px; background: rgba(255,255,255,0.15); border-radius: 4px; overflow: hidden; }
+  .cal-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.5s; }
+  .cal-fill.over { background: var(--warn); }
+
+  /* BP LOG */
+  .bp-time-block {
+    background: var(--card);
+    border-radius: 18px;
+    border: 1.5px solid var(--border);
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .bp-time-header {
+    padding: 14px 16px;
+    background: var(--green-50);
+    border-bottom: 1px solid var(--border);
+    font-size: 13px; font-weight: 700; color: var(--green-700);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .bp-inputs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; padding: 16px; }
+  .bp-input-group { text-align: center; }
+  .bp-input-label { font-size: 10px; color: var(--text-soft); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px; }
+  .bp-input-field {
+    width: 100%; padding: 10px 6px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+    font-size: 18px; font-weight: 700;
+    color: var(--text-dark);
+    background: var(--bg);
+    outline: none;
+    -webkit-appearance: none;
+  }
+  .bp-input-field:focus { border-color: var(--green-500); }
+  .bp-warn { font-size: 11px; color: var(--warn); padding: 0 16px 12px; display: none; }
+  .bp-warn.show { display: block; }
+
+  /* PROGRESS TAB */
+  .progress-tabs { display: flex; gap: 6px; margin-bottom: 20px; }
+  .progress-tab {
+    flex: 1; padding: 10px 4px;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px; font-weight: 600;
+    color: var(--text-soft);
+    cursor: pointer;
+    text-align: center;
+  }
+  .progress-tab.active {
+    background: var(--green-900);
+    border-color: var(--green-900);
+    color: #fff;
+  }
+
+  /* WEEKLY SUMMARY CARD */
+  .week-summary {
+    background: var(--card);
+    border-radius: 18px;
+    border: 1.5px solid var(--border);
+    padding: 18px;
+    margin-bottom: 12px;
+  }
+  .week-summary-title { font-size: 13px; font-weight: 700; color: var(--text-mid); margin-bottom: 14px; }
+  .week-metric { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .week-metric:last-child { border: none; }
+  .week-metric-label { font-size: 13px; color: var(--text-mid); }
+  .week-metric-val { font-size: 14px; font-weight: 700; color: var(--text-dark); }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .badge-green { background: var(--green-100); color: var(--green-700); }
+  .badge-warn { background: var(--warn-soft); color: var(--warn); }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(15,31,24,0.6);
+    z-index: 200;
+    align-items: flex-end;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--card);
+    border-radius: 28px 28px 0 0;
+    padding: 24px 24px 40px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-handle {
+    width: 36px; height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 0 auto 20px;
+  }
+  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+  .quick-foods { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .quick-food {
+    padding: 6px 12px;
+    background: var(--green-50);
+    border: 1px solid var(--green-200);
+    border-radius: 20px;
+    font-size: 12px; font-weight: 600;
+    color: var(--green-700);
+    cursor: pointer;
+  }
+
+  /* SETTINGS */
+  .settings-section {
+    background: var(--card);
+    border-radius: 18px;
+    border: 1.5px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .settings-row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .settings-row:last-child { border: none; }
+  .settings-icon { font-size: 20px; width: 24px; text-align: center; }
+  .settings-label { flex: 1; font-size: 14px; font-weight: 500; }
+  .settings-value { font-size: 13px; color: var(--text-soft); }
+  .settings-arrow { font-size: 12px; color: var(--text-soft); }
+
+  /* UTILITY */
+  .mt-12 { margin-top: 12px; }
+  .mt-20 { margin-top: 20px; }
+  .text-center { text-align: center; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  .fade-in { animation: fadeIn 0.4s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* NOTIFICATION TOAST */
+  .toast {
+    position: fixed; top: 60px; left: 50%; transform: translateX(-50%);
+    background: var(--green-900); color: #fff;
+    padding: 12px 20px; border-radius: 20px;
+    font-size: 13px; font-weight: 600;
+    z-index: 999;
+    display: none;
+    box-shadow: var(--shadow-lg);
+    white-space: nowrap;
+  }
+  .toast.show { display: block; animation: toastIn 0.3s ease; }
+  @keyframes toastIn { from { opacity:0; top:40px; } to { opacity:1; top:60px; } }
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast">✓ Saved!</div>
+
+<!-- ═══════════════════════════════════
+     SCREEN: WELCOME
+═══════════════════════════════════ -->
+<div class="screen active" id="screen-welcome">
+  <div style="position:absolute;top:52px;right:24px;">
+    <button id="welcome-lang-btn" onclick="toggleLangWelcome()" style="
+      padding:5px 14px;
+      background:rgba(255,255,255,0.15);
+      border:1px solid rgba(255,255,255,0.3);
+      border-radius:20px;
+      color:#fff;
+      font-family:'Poppins',sans-serif;
+      font-size:11px;font-weight:700;
+      cursor:pointer;letter-spacing:0.5px;
+    ">EN</button>
+  </div>
+  <div class="welcome-logo">🌿</div>
+  <div class="welcome-title">PIMOU</div>
+  <div class="welcome-sub">Health Tracker</div>
+  <div class="welcome-desc" id="welcome-desc">
+    ติดตามน้ำหนัก แคลอรี่ ความดัน<br>และการออกกำลังกาย<br>ในที่เดียว
+  </div>
+  <button class="btn-primary" id="welcome-start-btn" onclick="goTo('screen-onboard'); setOnboardStep(1)">
+    เริ่มต้นใช้งาน →
+  </button>
+  <button class="btn-secondary" id="welcome-existing-btn" onclick="loadApp()">
+    มีบัญชีอยู่แล้ว
+  </button>
+</div>
+
+<!-- ═══════════════════════════════════
+     SCREEN: ONBOARDING
+═══════════════════════════════════ -->
+<div class="screen" id="screen-onboard">
+  <div class="onboard-header">
+    <div class="step-label" id="onboard-step-label">ขั้นตอนที่ 1 จาก 4</div>
+    <div class="onboard-title" id="onboard-title">ข้อมูลส่วนตัว</div>
+    <div class="progress-dots" id="progress-dots">
+      <div class="dot active" style="width:12px"></div>
+      <div class="dot" style="width:12px"></div>
+      <div class="dot" style="width:12px"></div>
+      <div class="dot" style="width:12px"></div>
+    </div>
+  </div>
+
+  <!-- Step 1: Personal Info -->
+  <div class="onboard-body fade-in" id="step-1">
+    <div class="field-group">
+      <label class="field-label">ชื่อเล่น</label>
+      <input class="field-input" type="text" id="inp-name" placeholder="เช่น PIM" oninput="updateCalcs()">
+    </div>
+    <div class="field-group">
+      <label class="field-label">เพศ</label>
+      <div class="toggle-group">
+        <button class="toggle-btn active" id="btn-female" onclick="setGender('female')">♀ หญิง</button>
+        <button class="toggle-btn" id="btn-male" onclick="setGender('male')">♂ ชาย</button>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label">อายุ (ปี)</label>
+        <input class="field-input" type="number" id="inp-age" placeholder="32" oninput="updateCalcs()">
+      </div>
+      <div class="field-group">
+        <label class="field-label">ส่วนสูง (cm)</label>
+        <input class="field-input" type="number" id="inp-height" placeholder="155" oninput="updateCalcs()">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label">น้ำหนัก (kg)</label>
+        <input class="field-input" type="number" id="inp-weight" placeholder="92" oninput="updateCalcs()">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Body Fat% <span style="font-size:10px;color:var(--text-soft)">(ถ้าทราบ)</span></label>
+        <input class="field-input" type="number" id="inp-bf" placeholder="— ระบุทีหลังได้" oninput="updateCalcs()">
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">โรคประจำตัว</label>
+      <div class="checkbox-item" id="chk-bp" onclick="toggleCheck('chk-bp','hypertension')">
+        <div class="checkbox-box checked" id="cb-bp">✓</div>
+        <span class="checkbox-label">❤️ ความดันโลหิตสูง</span>
+      </div>
+      <div class="checkbox-item" id="chk-dm" onclick="toggleCheck('chk-dm','diabetes')">
+        <div class="checkbox-box" id="cb-dm"></div>
+        <span class="checkbox-label">🩺 เบาหวาน</span>
+      </div>
+      <div class="checkbox-item" id="chk-other" onclick="toggleCheck('chk-other','other')">
+        <div class="checkbox-box" id="cb-other"></div>
+        <span class="checkbox-label">💊 อื่นๆ</span>
+      </div>
+    </div>
+    <div class="field-group" id="field-meds">
+      <label class="field-label">ยาที่กินประจำ</label>
+      <input class="field-input" type="text" id="inp-meds" placeholder="เช่น Amlodipine 5mg เช้า">
+    </div>
+    <button class="btn-primary mt-20" onclick="nextStep(2)">ถัดไป →</button>
+  </div>
+
+  <!-- Step 2: Goal -->
+  <div class="onboard-body fade-in" id="step-2" style="display:none">
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label">น้ำหนักเป้าหมาย (kg)</label>
+        <input class="field-input" type="number" id="inp-goal-weight" placeholder="72" oninput="updateCalcs()">
+      </div>
+      <div class="field-group">
+        <label class="field-label">ระยะเวลา (เดือน)</label>
+        <input class="field-input" type="number" id="inp-months" placeholder="6" oninput="updateCalcs()">
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">ระดับกิจกรรมหลัก</label>
+      <select class="field-input" id="inp-activity" onchange="updateCalcs()">
+        <option value="1.2">🪑 นั่งทำงาน ไม่ค่อยขยับ</option>
+        <option value="1.375">🚶 เดินบ้าง ออกกำลังเบา</option>
+        <option value="1.55" selected>🏃 ออกกำลังกายสม่ำเสมอ</option>
+        <option value="1.65">💪 ออกกำลังกายทุกวัน</option>
+        <option value="1.725">🔥 ออกกำลังกายหนักมาก</option>
+      </select>
+    </div>
+
+    <!-- Calc Result -->
+    <div class="calc-result" id="calc-result">
+      <div class="calc-row">
+        <span class="calc-label">BMI</span>
+        <span class="calc-value" id="calc-bmi">—</span>
+      </div>
+      <hr class="calc-divider">
+      <div class="calc-row">
+        <span class="calc-label">BMR (พื้นฐาน)</span>
+        <span class="calc-value" id="calc-bmr">— kcal</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label">TDEE (ใช้จริง)</span>
+        <span class="calc-value" id="calc-tdee">— kcal</span>
+      </div>
+      <hr class="calc-divider">
+      <div class="calc-row">
+        <span class="calc-label">🎯 เป้าแคลอรี่/วัน</span>
+        <span class="calc-value accent" id="calc-target">— kcal</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label">ลดได้ประมาณ</span>
+        <span class="calc-value" id="calc-loss-rate">— kg/สัปดาห์</span>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">แคลอรี่เป้าหมาย/วัน (ปรับได้)</label>
+      <input class="field-input" type="number" id="inp-cal-target" placeholder="1850">
+      <div class="field-hint">ระบบแนะนำอัตโนมัติ แต่คุณปรับได้ตามต้องการ</div>
+    </div>
+    <button class="btn-primary mt-12" onclick="nextStep(3)">ถัดไป →</button>
+    <button class="btn-secondary" onclick="nextStep(1)">← ย้อนกลับ</button>
+  </div>
+
+  <!-- Step 3: Exercise Schedule -->
+  <div class="onboard-body fade-in" id="step-3" style="display:none">
+    <p style="font-size:13px;color:var(--text-soft);margin-bottom:16px;line-height:1.6">
+      ยืนยันตารางออกกำลังกายของคุณ — สามารถแก้ไขได้ภายหลัง
+    </p>
+    <div id="exercise-schedule">
+      <!-- Days rendered by JS -->
+    </div>
+    <button class="btn-primary mt-20" onclick="nextStep(4)">ถัดไป →</button>
+    <button class="btn-secondary" onclick="nextStep(2)">← ย้อนกลับ</button>
+  </div>
+
+  <!-- Step 4: Line Notify -->
+  <div class="onboard-body fade-in" id="step-4" style="display:none">
+    <div class="field-group">
+      <label class="field-label">Line Notify Token</label>
+      <input class="field-input" type="text" id="inp-line-token" placeholder="วาง Token ที่นี่">
+      <div class="field-hint">
+        รับ Token ได้ที่ <strong>notify.line.me</strong> → Personal Access Tokens
+      </div>
+    </div>
+    <div style="background:var(--green-50);border-radius:14px;padding:14px;margin-bottom:16px;">
+      <div style="font-size:12px;font-weight:700;color:var(--green-700);margin-bottom:10px;">⏰ เวลาแจ้งเตือน</div>
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label">เช้า (วัดความดัน)</label>
+          <input class="field-input" type="time" id="notif-morning" value="06:00">
+        </div>
+        <div class="field-group">
+          <label class="field-label">กลางวัน (log อาหาร)</label>
+          <input class="field-input" type="time" id="notif-noon" value="12:00">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label">เย็น (วัดความดัน)</label>
+          <input class="field-input" type="time" id="notif-evening" value="18:00">
+        </div>
+        <div class="field-group">
+          <label class="field-label">ค่ำ (สรุปวัน)</label>
+          <input class="field-input" type="time" id="notif-night" value="21:00">
+        </div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">ชื่อเพื่อนบน Line</label>
+      <input class="field-input" type="text" id="inp-line-name" placeholder="เช่น PIM">
+      <div class="field-hint">ใช้แสดงในข้อความแจ้งเตือน</div>
+    </div>
+
+    <button class="btn-primary mt-12" onclick="finishOnboard()">🌿 เริ่มใช้งาน PIMOU!</button>
+    <button class="btn-secondary" onclick="nextStep(3)">← ย้อนกลับ</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     SCREEN: MAIN APP
+═══════════════════════════════════ -->
+<div class="screen" id="screen-app">
+
+  <!-- TOP BAR -->
+  <div class="topbar" id="app-topbar">
+    <div class="topbar-row">
+      <div>
+        <div class="topbar-greeting" id="app-greeting">สวัสดีตอนเช้า 🌿</div>
+        <div class="topbar-name" id="app-name">Loading...</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button id="lang-btn" onclick="toggleLang()" style="
+          padding:5px 12px;
+          background:rgba(255,255,255,0.15);
+          border:1px solid rgba(255,255,255,0.25);
+          border-radius:20px;
+          color:#fff;
+          font-family:'Poppins',sans-serif;
+          font-size:11px;font-weight:700;
+          cursor:pointer;
+          letter-spacing:0.5px;
+        ">EN</button>
+        <div class="topbar-avatar">🌿</div>
+      </div>
+    </div>
+    <div class="goal-bar-wrap">
+      <div class="goal-bar-label">
+        <span id="bar-label-left">ความคืบหน้า</span>
+        <strong id="bar-label-right">0%</strong>
+      </div>
+      <div class="goal-bar-track">
+        <div class="goal-bar-fill" id="goal-bar-fill" style="width:0%"></div>
+      </div>
+      <div class="goal-tags" id="goal-tags">
+        <div class="goal-tag" id="tag-day">Day —</div>
+        <div class="goal-tag" id="tag-left">เหลืออีก — kg</div>
+        <div class="goal-tag" id="tag-cal">เป้า — kcal</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS CONTENT -->
+  <div class="content">
+
+    <!-- ── HOME TAB ── -->
+    <div class="log-section active" id="tab-home">
+
+      <!-- Today Checklist -->
+      <div class="section-title">วันนี้ทำครบไหม?</div>
+      <div class="checklist-wrap" id="today-checklist"></div>
+
+      <!-- Weekly Schedule -->
+      <div class="section-title">ตารางสัปดาห์นี้</div>
+      <div class="week-scroll">
+        <div class="week-days" id="week-days-home"></div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="section-title">สถิติล่าสุด</div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">⚖️</div>
+          <div class="stat-label">น้ำหนัก</div>
+          <div class="stat-value"><span id="stat-weight">—</span><span class="stat-unit"> kg</span></div>
+          <div class="stat-delta down" id="stat-weight-delta">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🔥</div>
+          <div class="stat-label">Cal วันนี้</div>
+          <div class="stat-value"><span id="stat-cal">—</span><span class="stat-unit"> kcal</span></div>
+          <div class="stat-delta ok" id="stat-cal-status">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">❤️</div>
+          <div class="stat-label">ความดัน</div>
+          <div class="stat-value"><span id="stat-bp">—/—</span></div>
+          <div class="stat-delta ok" id="stat-bp-status">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📏</div>
+          <div class="stat-label">BMI</div>
+          <div class="stat-value"><span id="stat-bmi">—</span></div>
+          <div class="stat-delta ok" id="stat-bmi-cat">—</div>
+        </div>
+      </div>
+
+      <!-- BP Summary -->
+      <div class="section-title">ความดันวันนี้</div>
+      <div class="bp-card">
+        <div class="bp-card-title">📊 ค่าเฉลี่ยทั้งวัน</div>
+        <div class="bp-readings">
+          <div class="bp-reading">
+            <div class="bp-reading-label">เช้า เฉลี่ย</div>
+            <div class="bp-reading-val" id="bp-morning-avg">—/—</div>
+            <div class="bp-reading-sub">mmHg</div>
+          </div>
+          <div class="bp-reading">
+            <div class="bp-reading-label">เย็น เฉลี่ย</div>
+            <div class="bp-reading-val" id="bp-evening-avg">—/—</div>
+            <div class="bp-reading-sub">mmHg</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── LOG TAB ── -->
+    <div class="log-section" id="tab-log">
+      <div class="log-tabs">
+        <button class="log-tab active" onclick="setLogTab('weight')">⚖️ น้ำหนัก</button>
+        <button class="log-tab" onclick="setLogTab('food')">🍽️ อาหาร</button>
+        <button class="log-tab" onclick="setLogTab('bp')">❤️ ความดัน</button>
+        <button class="log-tab" onclick="setLogTab('exercise')">💪 ออกกำลัง</button>
+      </div>
+
+      <!-- Weight Log -->
+      <div id="log-weight">
+        <div class="cal-summary" style="background:linear-gradient(135deg,var(--green-900),var(--green-600))">
+          <div class="cal-row">
+            <div class="cal-item">
+              <div class="cal-item-val" id="disp-current-weight">—</div>
+              <div class="cal-item-label">ปัจจุบัน (kg)</div>
+            </div>
+            <div class="cal-item">
+              <div class="cal-item-val" id="disp-goal-weight">—</div>
+              <div class="cal-item-label">เป้าหมาย (kg)</div>
+            </div>
+            <div class="cal-item">
+              <div class="cal-item-val" id="disp-lost">—</div>
+              <div class="cal-item-label">ลดไปแล้ว (kg)</div>
+            </div>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">บันทึกน้ำหนักวันนี้</label>
+          <input class="field-input" type="number" id="log-weight-input" placeholder="เช่น 91.5" step="0.1">
+          <div class="field-hint">วัดตอนเช้า หลังเข้าห้องน้ำ ก่อนกินข้าว</div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">รอบเอว (cm) <span style="font-size:10px;color:var(--text-soft)">ทุก 2 อาทิตย์</span></label>
+          <input class="field-input" type="number" id="log-waist-input" placeholder="—" step="0.5">
+        </div>
+        <div class="field-group">
+          <label class="field-label">รอบสะโพก (cm)</label>
+          <input class="field-input" type="number" id="log-hip-input" placeholder="—" step="0.5">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Body Fat% <span style="font-size:10px;color:var(--text-soft)">(ถ้ามี)</span></label>
+          <input class="field-input" type="number" id="log-bf-input" placeholder="—" step="0.1">
+        </div>
+        <button class="btn-primary mt-12" onclick="saveWeight()">💾 บันทึกน้ำหนัก</button>
+      </div>
+
+      <!-- Food Log -->
+      <div id="log-food" style="display:none">
+        <div class="cal-summary">
+          <div class="cal-row">
+            <div class="cal-item">
+              <div class="cal-item-val" id="cal-eaten">0</div>
+              <div class="cal-item-label">กินแล้ว</div>
+            </div>
+            <div class="cal-item">
+              <div class="cal-item-val" id="cal-goal-disp">1850</div>
+              <div class="cal-item-label">เป้าหมาย</div>
+            </div>
+            <div class="cal-item">
+              <div class="cal-item-val" id="cal-remain">1850</div>
+              <div class="cal-item-label">เหลืออีก</div>
+            </div>
+          </div>
+          <div class="cal-track">
+            <div class="cal-fill" id="cal-bar" style="width:0%"></div>
+          </div>
+        </div>
+
+        <!-- Meals -->
+        <div class="meal-block">
+          <div class="meal-header">
+            <div class="meal-icon">🌅</div>
+            <div class="meal-title">มื้อเช้า</div>
+            <div class="meal-cal" id="cal-breakfast">0 kcal</div>
+          </div>
+          <div class="meal-items" id="items-breakfast"></div>
+          <button class="add-food-btn" onclick="openFoodModal('breakfast')">+ เพิ่มอาหาร</button>
+        </div>
+        <div class="meal-block">
+          <div class="meal-header">
+            <div class="meal-icon">☀️</div>
+            <div class="meal-title">มื้อกลางวัน</div>
+            <div class="meal-cal" id="cal-lunch">0 kcal</div>
+          </div>
+          <div class="meal-items" id="items-lunch"></div>
+          <button class="add-food-btn" onclick="openFoodModal('lunch')">+ เพิ่มอาหาร</button>
+        </div>
+        <div class="meal-block">
+          <div class="meal-header">
+            <div class="meal-icon">🌆</div>
+            <div class="meal-title">มื้อเย็น</div>
+            <div class="meal-cal" id="cal-dinner">0 kcal</div>
+          </div>
+          <div class="meal-items" id="items-dinner"></div>
+          <button class="add-food-btn" onclick="openFoodModal('dinner')">+ เพิ่มอาหาร</button>
+        </div>
+        <div class="meal-block">
+          <div class="meal-header">
+            <div class="meal-icon">🍎</div>
+            <div class="meal-title">Snacks</div>
+            <div class="meal-cal" id="cal-snack">0 kcal</div>
+          </div>
+          <div class="meal-items" id="items-snack"></div>
+          <button class="add-food-btn" onclick="openFoodModal('snack')">+ เพิ่มอาหาร</button>
+        </div>
+      </div>
+
+      <!-- BP Log -->
+      <div id="log-bp" style="display:none">
+        <div style="background:var(--warn-soft);border-radius:14px;padding:12px 14px;margin-bottom:16px;border:1px solid #ffcdd2;">
+          <div style="font-size:12px;font-weight:700;color:var(--warn)">⚠️ ข้อควรรู้</div>
+          <div style="font-size:12px;color:#c62828;margin-top:4px;line-height:1.5">
+            วัดความดันเช้า 2 ครั้ง ห่างกัน 1–2 นาที<br>
+            เย็น 2 ครั้ง เช่นกัน · ก่อนวัดพักอย่างน้อย 5 นาที
+          </div>
+        </div>
+
+        <div class="bp-time-block">
+          <div class="bp-time-header">🌅 เช้า — ครั้งที่ 1</div>
+          <div class="bp-inputs">
+            <div class="bp-input-group">
+              <div class="bp-input-label">Systolic</div>
+              <input class="bp-input-field" type="number" id="bp-m1-sys" placeholder="120" oninput="checkBP('bp-m1-sys')">
+            </div>
+            <div class="bp-input-group">
+              <div class="bp-input-label">Diastolic</div>
+              <input class="bp-input-field" type="number" id="bp-m1-dia" placeholder="80">
+            </div>
+            <div class="bp-input-group">
+              <div class="bp-input-label">Pulse</div>
+              <input class="bp-input-field" type="number" id="bp-m1-pul" placeholder="72">
+            </div>
+          </div>
+          <div class="bp-warn" id="warn-m1">⚠️ Systolic สูง! ควรพักและวัดซ้ำ</div>
+        </div>
+
+        <div class="bp-time-block">
+          <div class="bp-time-header">🌅 เช้า — ครั้งที่ 2</div>
+          <div class="bp-inputs">
+            <div class="bp-input-group">
+              <div class="bp-input-label">Systolic</div>
+              <input class="bp-input-field" type="number" id="bp-m2-sys" placeholder="120" oninput="checkBP('bp-m2-sys')">
+            </div>
+            <div class="bp-input-group">
+              <div class="bp-input-label">Diastolic</div>
+              <input class="bp-input-field" type="number" id="bp-m2-dia" placeholder="80">
+            </div>
+            <div class="bp-input-group">
+              <div class="bp-input-label">Pulse</div>
+              <input class="bp-input-field" type="number" id="bp-m2-pul" placeholder="72">
+            </div>
+          </div>
+          <div class="bp-warn" id="warn-m2">⚠️ Systolic สูง! ควรพักและวัดซ้ำ</div>
+        </div>
+
+        <div class="bp-time-block">
+          <div class="bp-time-header">🌆 เย็น — ครั้งที่ 1</div>
+          <div class="bp-inputs">
+            <div class="bp-input-group">
+              <div class="bp-input-label">Systolic</div>
+              <input class="bp-input-field" type="number" id="bp-e1-sys" placeholder="120" oninput="checkBP('bp-e1-sys')">
+            </div>
+            <div class="bp-input-group">
+              <div class="bp-input-label">Diastolic</div>
+              <input class="bp-input-field" type="number" id="bp-e1-dia" placeholder="80">
+            </div>
+            <div class="bp-input-group">
+              <div class="bp-input-label">Pulse</div>
+              <input class="bp-input-field" type="number" id="bp-e1-pul" placeholder="72">
+            </div>
+          </div>
+          <div class="bp-warn" id="warn-e1">⚠️ Systolic สูง! ควรพักและวัดซ้ำ</div>
+        </div>
+
+        <div class="bp-time-block">
+          <div class="bp-time-header">🌆 เย็น — ครั้งที่ 2</div>
+          <div class="bp-inputs">
+            <div class="bp-input-group">
+              <div class="bp-input-label">Systolic</div>
+              <input class="bp-input-field" type="number" id="bp-e2-sys" placeholder="120" oninput="checkBP('bp-e2-sys')">
+            </div>
+            <div class="bp-input-group">
+              <div class="bp-input-label">Diastolic</div>
+              <input class="bp-input-field" type="number" id="bp-e2-dia" placeholder="80">
+            </div>
+            <div class="bp-input-group">
+              <div class="bp-input-label">Pulse</div>
+              <input class="bp-input-field" type="number" id="bp-e2-pul" placeholder="72">
+            </div>
+          </div>
+          <div class="bp-warn" id="warn-e2">⚠️ Systolic สูง! ควรพักและวัดซ้ำ</div>
+        </div>
+
+        <button class="btn-primary mt-12" onclick="saveBP()">💾 บันทึกความดัน</button>
+      </div>
+
+      <!-- Exercise Log -->
+      <div id="log-exercise" style="display:none">
+        <div id="exercise-checklist-log"></div>
+        <div class="field-group mt-20">
+          <label class="field-label">ระดับความเหนื่อย</label>
+          <div class="toggle-group">
+            <button class="toggle-btn" onclick="setRPE(1)" id="rpe-1">😴 เบา</button>
+            <button class="toggle-btn" onclick="setRPE(2)" id="rpe-2">😐 ปาน</button>
+            <button class="toggle-btn" onclick="setRPE(3)" id="rpe-3">💪 หนัก</button>
+            <button class="toggle-btn" onclick="setRPE(4)" id="rpe-4">🔥 Max</button>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">โน้ต</label>
+          <input class="field-input" type="text" id="exercise-note" placeholder="เช่น เพิ่มน้ำหนัก dumbbell เป็น 6kg">
+        </div>
+        <button class="btn-primary mt-12" onclick="saveExercise()">💾 บันทึกการออกกำลังกาย</button>
+      </div>
+    </div>
+
+    <!-- ── PROGRESS TAB ── -->
+    <div class="log-section" id="tab-progress">
+      <div class="progress-tabs">
+        <button class="progress-tab active" onclick="setProgressTab('weight')">น้ำหนัก</button>
+        <button class="progress-tab" onclick="setProgressTab('cal')">แคลอรี่</button>
+        <button class="progress-tab" onclick="setProgressTab('bp')">ความดัน</button>
+      </div>
+
+      <div id="prog-weight">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">📉 น้ำหนักรายสัปดาห์</div>
+            <div class="chart-tabs">
+              <button class="chart-tab active" onclick="setChartRange('4w')">4W</button>
+              <button class="chart-tab" onclick="setChartRange('8w')">8W</button>
+            </div>
+          </div>
+          <canvas id="chart-weight" height="180"></canvas>
+        </div>
+        <div class="week-summary mt-12">
+          <div class="week-summary-title">📊 สรุปสัปดาห์ปัจจุบัน</div>
+          <div class="week-metric">
+            <span class="week-metric-label">น้ำหนักเริ่มต้น</span>
+            <span class="week-metric-val" id="ws-start">— kg</span>
+          </div>
+          <div class="week-metric">
+            <span class="week-metric-label">น้ำหนักล่าสุด</span>
+            <span class="week-metric-val" id="ws-current">— kg</span>
+          </div>
+          <div class="week-metric">
+            <span class="week-metric-label">ลดได้สัปดาห์นี้</span>
+            <span class="week-metric-val" id="ws-lost">— kg</span>
+          </div>
+          <div class="week-metric">
+            <span class="week-metric-label">BMI ปัจจุบัน</span>
+            <span class="week-metric-val" id="ws-bmi">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="prog-cal" style="display:none">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">🔥 แคลอรี่รายวัน (7 วันล่าสุด)</div>
+          </div>
+          <canvas id="chart-cal" height="180"></canvas>
+        </div>
+      </div>
+
+      <div id="prog-bp" style="display:none">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">❤️ ความดันโลหิต (14 วัน)</div>
+          </div>
+          <canvas id="chart-bp" height="180"></canvas>
+        </div>
+        <div class="week-summary mt-12">
+          <div class="week-summary-title">🩺 ค่าเฉลี่ย 7 วันล่าสุด</div>
+          <div class="week-metric">
+            <span class="week-metric-label">Systolic เฉลี่ย</span>
+            <span class="week-metric-val" id="avg-sys">— mmHg</span>
+          </div>
+          <div class="week-metric">
+            <span class="week-metric-label">Diastolic เฉลี่ย</span>
+            <span class="week-metric-val" id="avg-dia">— mmHg</span>
+          </div>
+          <div class="week-metric">
+            <span class="week-metric-label">สถานะล่าสุด</span>
+            <span class="week-metric-val" id="bp-status-text"><span class="badge badge-green">ปกติ</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PLAN TAB ── -->
+    <div class="log-section" id="tab-plan">
+      <div class="section-title">ตารางออกกำลังกายประจำสัปดาห์</div>
+      <div id="full-week-plan"></div>
+
+      <div class="section-title">แผนอาหาร</div>
+      <div class="meal-block">
+        <div class="meal-header"><div class="meal-icon">🌅</div><div class="meal-title">มื้อเช้า (~350–400 kcal)</div></div>
+        <div class="meal-items">
+          <div class="meal-item"><span class="meal-item-name">🥣 Overnight oats + chia + กล้วย</span><span class="meal-item-cal">~360</span></div>
+          <div class="meal-item"><span class="meal-item-name">🥚 ไข่ต้ม 2 ฟอง + กล้วย + โฮลวีต</span><span class="meal-item-cal">~350</span></div>
+          <div class="meal-item"><span class="meal-item-name">🥛 Greek yogurt + ไข่ต้ม + ฝรั่ง</span><span class="meal-item-cal">~300</span></div>
+        </div>
+      </div>
+      <div class="meal-block">
+        <div class="meal-header"><div class="meal-icon">☀️</div><div class="meal-title">มื้อกลางวัน (~500–550 kcal)</div></div>
+        <div class="meal-items">
+          <div class="meal-item"><span class="meal-item-name">🍚 ข้าวกล้อง + ไก่ย่าง + ผัดผัก + ต้มยำใส</span><span class="meal-item-cal">~500</span></div>
+          <div class="meal-item"><span class="meal-item-name">🥪 แซนด์วิชทูน่าโฮลวีต + ชาเขียว</span><span class="meal-item-cal">~450</span></div>
+        </div>
+      </div>
+      <div class="meal-block">
+        <div class="meal-header"><div class="meal-icon">🌆</div><div class="meal-title">มื้อเย็น (~450–500 kcal)</div></div>
+        <div class="meal-items">
+          <div class="meal-item"><span class="meal-item-name">🍲 ต้มยำ + ข้าวกล้อง ½ ถ้วย</span><span class="meal-item-cal">~450</span></div>
+          <div class="meal-item"><span class="meal-item-name">🐟 ปลานึ่งมะนาว + ผักบุ้ง + ข้าว</span><span class="meal-item-cal">~480</span></div>
+        </div>
+      </div>
+
+      <div class="section-title">❌ หลีกเลี่ยง</div>
+      <div style="background:var(--warn-soft);border-radius:14px;padding:14px;border:1px solid #ffcdd2;">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          <span style="background:#fff;padding:4px 10px;border-radius:20px;font-size:12px;color:var(--warn);border:1px solid #ffcdd2">บะหมี่กึ่งฯ</span>
+          <span style="background:#fff;padding:4px 10px;border-radius:20px;font-size:12px;color:var(--warn);border:1px solid #ffcdd2">ชาไทย</span>
+          <span style="background:#fff;padding:4px 10px;border-radius:20px;font-size:12px;color:var(--warn);border:1px solid #ffcdd2">ของทอด</span>
+          <span style="background:#fff;padding:4px 10px;border-radius:20px;font-size:12px;color:var(--warn);border:1px solid #ffcdd2">ไส้กรอก</span>
+          <span style="background:#fff;padding:4px 10px;border-radius:20px;font-size:12px;color:var(--warn);border:1px solid #ffcdd2">น้ำปลาเยอะ</span>
+          <span style="background:#fff;padding:4px 10px;border-radius:20px;font-size:12px;color:var(--warn);border:1px solid #ffcdd2">กะทิทุกวัน</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS TAB ── -->
+    <div class="log-section" id="tab-settings">
+      <div class="section-title">โปรไฟล์</div>
+      <div class="settings-section">
+        <div class="settings-row" onclick="goTo('screen-onboard'); setOnboardStep(1)">
+          <div class="settings-icon">👤</div>
+          <div class="settings-label">ข้อมูลส่วนตัว</div>
+          <div class="settings-value" id="set-profile-val">—</div>
+          <div class="settings-arrow">›</div>
+        </div>
+        <div class="settings-row" onclick="goTo('screen-onboard'); setOnboardStep(2)">
+          <div class="settings-icon">🎯</div>
+          <div class="settings-label">เป้าหมาย</div>
+          <div class="settings-value" id="set-goal-val">—</div>
+          <div class="settings-arrow">›</div>
+        </div>
+      </div>
+
+      <div class="section-title">การแจ้งเตือน</div>
+      <div class="settings-section">
+        <div class="settings-row" onclick="goTo('screen-onboard'); setOnboardStep(4)">
+          <div class="settings-icon">💬</div>
+          <div class="settings-label">Line Notify</div>
+          <div class="settings-value" id="set-line-val">ตั้งค่า</div>
+          <div class="settings-arrow">›</div>
+        </div>
+      </div>
+
+      <div class="section-title">ข้อมูล</div>
+      <div class="settings-section">
+        <div class="settings-row" onclick="exportCSV()">
+          <div class="settings-icon">📤</div>
+          <div class="settings-label">Export ข้อมูล CSV</div>
+          <div class="settings-arrow">›</div>
+        </div>
+        <div class="settings-row" onclick="clearData()">
+          <div class="settings-icon">🗑️</div>
+          <div class="settings-label" style="color:var(--warn)">ลบข้อมูลทั้งหมด</div>
+          <div class="settings-arrow">›</div>
+        </div>
+      </div>
+
+      <div class="text-center" style="padding:20px;color:var(--text-soft);font-size:12px;">
+        PIMOU v1.0 · Made with 🌿
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <div class="nav-item active" id="nav-home" onclick="setTab('home')">
+      <div class="nav-icon">🏠</div>
+      <div class="nav-label" data-i18n="nav_home">หน้าหลัก</div>
+    </div>
+    <div class="nav-item" id="nav-log" onclick="setTab('log')">
+      <div class="nav-icon">📝</div>
+      <div class="nav-label" data-i18n="nav_log">บันทึก</div>
+    </div>
+    <div class="nav-item" id="nav-progress" onclick="setTab('progress')">
+      <div class="nav-icon">📊</div>
+      <div class="nav-label" data-i18n="nav_progress">ความคืบหน้า</div>
+    </div>
+    <div class="nav-item" id="nav-plan" onclick="setTab('plan')">
+      <div class="nav-icon">🗓️</div>
+      <div class="nav-label" data-i18n="nav_plan">แผน</div>
+    </div>
+    <div class="nav-item" id="nav-settings" onclick="setTab('settings')">
+      <div class="nav-icon">⚙️</div>
+      <div class="nav-label" data-i18n="nav_settings">ตั้งค่า</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     MODAL: ADD FOOD
+═══════════════════════════════════ -->
+<div class="modal-overlay" id="food-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">+ เพิ่มอาหาร</div>
+
+    <div class="field-group">
+      <label class="field-label">ชื่อเมนู</label>
+      <input class="field-input" type="text" id="food-name-input" placeholder="เช่น ข้าวไก่ย่าง">
+    </div>
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label">แคลอรี่ (kcal)</label>
+        <input class="field-input" type="number" id="food-cal-input" placeholder="เช่น 450">
+      </div>
+      <div class="field-group">
+        <label class="field-label">โปรตีน (g)</label>
+        <input class="field-input" type="number" id="food-protein-input" placeholder="เช่น 35">
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">เมนูที่กินบ่อย (กดเลือก)</label>
+      <div class="quick-foods" id="quick-foods-list"></div>
+    </div>
+
+    <button class="btn-primary" onclick="addFood()">+ เพิ่ม</button>
+    <button class="btn-secondary" onclick="closeFoodModal()">ยกเลิก</button>
+  </div>
+</div>
+
+<!-- ═══ CHART.JS ═══ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+
+<script>
+// ══════════════════════════════
+// STATE
+// ══════════════════════════════
+let profile = {};
+let conditions = { hypertension: true, diabetes: false, other: false };
+let gender = 'female';
+let currentStep = 1;
+let currentTab = 'home';
+let currentLogTab = 'weight';
+let currentProgressTab = 'weight';
+let currentFoodMeal = 'breakfast';
+let currentRPE = 0;
+let currentLang = localStorage.getItem('pimou_lang') || 'th';
+
+let logs = { weights: [], bp: [], food: {}, exercise: {} };
+
+// ══════════════════════════════
+// i18n TRANSLATIONS
+// ══════════════════════════════
+const I18N = {
+  th: {
+    // Welcome
+    welcome_sub: 'Health Tracker',
+    welcome_desc: 'ติดตามน้ำหนัก แคลอรี่ ความดัน\nและการออกกำลังกาย\nในที่เดียว',
+    welcome_start: 'เริ่มต้นใช้งาน →',
+    welcome_existing: 'มีบัญชีอยู่แล้ว',
+
+    // Onboarding steps
+    step_labels: ['ขั้นตอนที่ 1 จาก 4','ขั้นตอนที่ 2 จาก 4','ขั้นตอนที่ 3 จาก 4','ขั้นตอนที่ 4 จาก 4'],
+    step_titles: ['ข้อมูลส่วนตัว','ตั้งเป้าหมาย','ตารางออกกำลังกาย','การแจ้งเตือน'],
+
+    // Form labels
+    nickname: 'ชื่อเล่น',
+    nickname_ph: 'เช่น PIM',
+    gender: 'เพศ',
+    female: '♀ หญิง',
+    male: '♂ ชาย',
+    age: 'อายุ (ปี)',
+    height: 'ส่วนสูง (cm)',
+    weight: 'น้ำหนัก (kg)',
+    body_fat: 'Body Fat%',
+    body_fat_hint: '(ถ้าทราบ)',
+    conditions_label: 'โรคประจำตัว',
+    cond_bp: '❤️ ความดันโลหิตสูง',
+    cond_dm: '🩺 เบาหวาน',
+    cond_other: '💊 อื่นๆ',
+    meds: 'ยาที่กินประจำ',
+    meds_ph: 'เช่น Amlodipine 5mg เช้า',
+    next: 'ถัดไป →',
+    back: '← ย้อนกลับ',
+
+    // Step 2
+    goal_weight: 'น้ำหนักเป้าหมาย (kg)',
+    months: 'ระยะเวลา (เดือน)',
+    activity: 'ระดับกิจกรรมหลัก',
+    activity_opts: ['🪑 นั่งทำงาน ไม่ค่อยขยับ','🚶 เดินบ้าง ออกกำลังเบา','🏃 ออกกำลังกายสม่ำเสมอ','💪 ออกกำลังกายทุกวัน','🔥 ออกกำลังกายหนักมาก'],
+    cal_target_label: 'แคลอรี่เป้าหมาย/วัน (ปรับได้)',
+    cal_target_hint: 'ระบบแนะนำอัตโนมัติ แต่คุณปรับได้ตามต้องการ',
+    calc_bmi: 'BMI',
+    calc_bmr: 'BMR (พื้นฐาน)',
+    calc_tdee: 'TDEE (ใช้จริง)',
+    calc_target: '🎯 เป้าแคลอรี่/วัน',
+    calc_loss: 'ลดได้ประมาณ',
+    calc_loss_unit: 'kg/สัปดาห์',
+
+    // Step 3
+    schedule_hint: 'ยืนยันตารางออกกำลังกายของคุณ — สามารถแก้ไขได้ภายหลัง',
+
+    // Step 4
+    line_token: 'Line Notify Token',
+    line_token_hint: 'รับ Token ได้ที่ notify.line.me → Personal Access Tokens',
+    notif_title: '⏰ เวลาแจ้งเตือน',
+    notif_morning: 'เช้า (วัดความดัน)',
+    notif_noon: 'กลางวัน (log อาหาร)',
+    notif_evening: 'เย็น (วัดความดัน)',
+    notif_night: 'ค่ำ (สรุปวัน)',
+    line_name: 'ชื่อเพื่อนบน Line',
+    line_name_ph: 'เช่น PIM',
+    line_name_hint: 'ใช้แสดงในข้อความแจ้งเตือน',
+    finish_btn: '🌿 เริ่มใช้งาน PIMOU!',
+
+    // Top bar greetings
+    good_morning: 'สวัสดีตอนเช้า 🌿',
+    good_afternoon: 'สวัสดีตอนบ่าย ☀️',
+    good_evening: 'สวัสดีตอนเย็น 🌙',
+
+    // Dashboard
+    progress_label: 'ความคืบหน้า',
+    day_label: 'Day',
+    remaining: 'เหลือ',
+    goal: 'เป้า',
+    today_done: 'วันนี้ทำครบไหม?',
+    this_week: 'ตารางสัปดาห์นี้',
+    latest_stats: 'สถิติล่าสุด',
+    bp_today: 'ความดันวันนี้',
+    bp_avg: '📊 ค่าเฉลี่ยทั้งวัน',
+    morning_avg: 'เช้า เฉลี่ย',
+    evening_avg: 'เย็น เฉลี่ย',
+
+    // Stats
+    stat_weight: 'น้ำหนัก',
+    stat_cal: 'Cal วันนี้',
+    stat_bp: 'ความดัน',
+    stat_bmi: 'BMI',
+
+    // Checklist items
+    check_cardio: 'Cardio + HIIT',
+    check_cardio_time: 'เช้า 30 นาที',
+    check_pt: 'PT at Gym',
+    check_pt_time: 'เย็น 60 นาที',
+    check_pilates: 'Pilates',
+    check_walk: 'เดินสวน',
+    check_bp_morning: 'วัดความดันเช้า',
+    check_bp_morning_time: 'ก่อน 9 โมง',
+    check_bp_evening: 'วัดความดันเย็น',
+    check_bp_evening_time: 'ก่อน 2 ทุ่ม',
+    check_food_log: 'บันทึกอาหาร',
+    check_food_log_time: 'ทุกมื้อ',
+
+    // Log tabs
+    log_weight: '⚖️ น้ำหนัก',
+    log_food: '🍽️ อาหาร',
+    log_bp: '❤️ ความดัน',
+    log_exercise: '💪 ออกกำลัง',
+
+    // Weight log
+    log_weight_title: 'บันทึกน้ำหนักวันนี้',
+    log_weight_hint: 'วัดตอนเช้า หลังเข้าห้องน้ำ ก่อนกินข้าว',
+    log_waist: 'รอบเอว (cm)',
+    log_waist_hint: 'ทุก 2 อาทิตย์',
+    log_hip: 'รอบสะโพก (cm)',
+    log_bf: 'Body Fat%',
+    log_bf_hint: '(ถ้ามี)',
+    save_weight_btn: '💾 บันทึกน้ำหนัก',
+    current_weight: 'ปัจจุบัน (kg)',
+    goal_weight_disp: 'เป้าหมาย (kg)',
+    lost_so_far: 'ลดไปแล้ว (kg)',
+
+    // Food log
+    cal_eaten: 'กินแล้ว',
+    cal_remaining: 'เหลืออีก',
+    meal_breakfast: 'มื้อเช้า',
+    meal_lunch: 'มื้อกลางวัน',
+    meal_dinner: 'มื้อเย็น',
+    meal_snack: 'Snacks',
+    add_food: '+ เพิ่มอาหาร',
+
+    // BP log
+    bp_warning: '⚠️ ข้อควรรู้',
+    bp_warning_text: 'วัดความดันเช้า 2 ครั้ง ห่างกัน 1–2 นาที\nเย็น 2 ครั้ง เช่นกัน · ก่อนวัดพักอย่างน้อย 5 นาที',
+    bp_m1: '🌅 เช้า — ครั้งที่ 1',
+    bp_m2: '🌅 เช้า — ครั้งที่ 2',
+    bp_e1: '🌆 เย็น — ครั้งที่ 1',
+    bp_e2: '🌆 เย็น — ครั้งที่ 2',
+    bp_sys: 'Systolic',
+    bp_dia: 'Diastolic',
+    bp_pulse: 'Pulse',
+    bp_high_warn: '⚠️ Systolic สูง! ควรพักและวัดซ้ำ',
+    save_bp_btn: '💾 บันทึกความดัน',
+
+    // Exercise log
+    rpe_label: 'ระดับความเหนื่อย',
+    rpe_1: '😴 เบา', rpe_2: '😐 ปาน', rpe_3: '💪 หนัก', rpe_4: '🔥 Max',
+    note_label: 'โน้ต',
+    note_ph: 'เช่น เพิ่มน้ำหนัก dumbbell เป็น 6kg',
+    save_exercise_btn: '💾 บันทึกการออกกำลังกาย',
+
+    // Progress
+    prog_weight: 'น้ำหนัก',
+    prog_cal: 'แคลอรี่',
+    prog_bp: 'ความดัน',
+    weight_chart_title: '📉 น้ำหนักรายสัปดาห์',
+    cal_chart_title: '🔥 แคลอรี่รายวัน (7 วันล่าสุด)',
+    bp_chart_title: '❤️ ความดันโลหิต (14 วัน)',
+    week_summary_title: '📊 สรุปสัปดาห์ปัจจุบัน',
+    ws_start: 'น้ำหนักเริ่มต้น',
+    ws_current: 'น้ำหนักล่าสุด',
+    ws_lost: 'ลดได้สัปดาห์นี้',
+    ws_bmi: 'BMI ปัจจุบัน',
+    bp_avg_7: '🩺 ค่าเฉลี่ย 7 วันล่าสุด',
+    avg_sys: 'Systolic เฉลี่ย',
+    avg_dia: 'Diastolic เฉลี่ย',
+    bp_status: 'สถานะล่าสุด',
+
+    // Plan tab
+    exercise_plan_title: 'ตารางออกกำลังกายประจำสัปดาห์',
+    meal_plan_title: 'แผนอาหาร',
+    avoid_title: '❌ หลีกเลี่ยง',
+    meal_breakfast_cal: 'มื้อเช้า (~350–400 kcal)',
+    meal_lunch_cal: 'มื้อกลางวัน (~500–550 kcal)',
+    meal_dinner_cal: 'มื้อเย็น (~450–500 kcal)',
+    avoid_items: ['บะหมี่กึ่งฯ','ชาไทย','ของทอด','ไส้กรอก','น้ำปลาเยอะ','กะทิทุกวัน'],
+
+    // Settings
+    settings_profile: 'โปรไฟล์',
+    settings_personal: 'ข้อมูลส่วนตัว',
+    settings_goal: 'เป้าหมาย',
+    settings_notifications: 'การแจ้งเตือน',
+    settings_line: 'Line Notify',
+    settings_data: 'ข้อมูล',
+    settings_export: 'Export ข้อมูล CSV',
+    settings_delete: 'ลบข้อมูลทั้งหมด',
+    settings_line_connected: 'เชื่อมต่อแล้ว ✓',
+    settings_line_setup: 'ตั้งค่า',
+
+    // Nav
+    nav_home: 'หน้าหลัก',
+    nav_log: 'บันทึก',
+    nav_progress: 'ความคืบหน้า',
+    nav_plan: 'แผน',
+    nav_settings: 'ตั้งค่า',
+
+    // Modal
+    modal_add_food: '+ เพิ่มอาหาร',
+    food_name: 'ชื่อเมนู',
+    food_name_ph: 'เช่น ข้าวไก่ย่าง',
+    food_cal: 'แคลอรี่ (kcal)',
+    food_cal_ph: 'เช่น 450',
+    food_protein: 'โปรตีน (g)',
+    food_protein_ph: 'เช่น 35',
+    quick_foods_label: 'เมนูที่กินบ่อย (กดเลือก)',
+    add_btn: '+ เพิ่ม',
+    cancel_btn: 'ยกเลิก',
+
+    // Day schedule
+    morning: 'เช้า',
+    afternoon: 'บ่าย',
+    evening: 'เย็น',
+    day_short: ['จ','อ','พ','พฤ','ศ','ส','อา'],
+    day_full: ['จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์','อาทิตย์'],
+
+    // Toast
+    toast_saved: '✓ บันทึก + sync Sheets แล้ว! 📊',
+    toast_offline: '✓ บันทึกแล้ว (offline)',
+    toast_weight_saved: '✓ บันทึก + sync Sheets แล้ว! 📊',
+    toast_bp_saved: '✓ บันทึกความดัน + sync แล้ว! 📊',
+    toast_exercise_saved: '✓ บันทึก + sync แล้ว! 📊',
+    toast_food_added: '✓ เพิ่มเมนูแล้ว!',
+    toast_export: '✓ Export สำเร็จ!',
+    toast_deleted: '🗑️ ลบข้อมูลแล้ว',
+    toast_done: '✓ เสร็จแล้ว!',
+    toast_cancel: 'ยกเลิกแล้ว',
+    toast_need_weight: '⚠️ กรุณากรอกน้ำหนัก',
+    toast_need_food: '⚠️ กรุณากรอกชื่อเมนู',
+    syncing: 'กำลัง sync...',
+    confirm_delete: '⚠️ ลบข้อมูลทั้งหมด? ไม่สามารถกู้คืนได้',
+
+    // Version
+    version: 'PIMOU v1.0 · Made with 🌿',
+
+    // Language toggle
+    lang_toggle: 'EN',
+  },
+
+  en: {
+    welcome_sub: 'Health Tracker',
+    welcome_desc: 'Track weight, calories, blood pressure\nand workouts\nall in one place',
+    welcome_start: 'Get Started →',
+    welcome_existing: 'I already have an account',
+
+    step_labels: ['Step 1 of 4','Step 2 of 4','Step 3 of 4','Step 4 of 4'],
+    step_titles: ['Personal Info','Set Your Goal','Exercise Schedule','Notifications'],
+
+    nickname: 'Nickname',
+    nickname_ph: 'e.g. PIM',
+    gender: 'Gender',
+    female: '♀ Female',
+    male: '♂ Male',
+    age: 'Age (years)',
+    height: 'Height (cm)',
+    weight: 'Weight (kg)',
+    body_fat: 'Body Fat%',
+    body_fat_hint: '(if known)',
+    conditions_label: 'Medical Conditions',
+    cond_bp: '❤️ High Blood Pressure',
+    cond_dm: '🩺 Diabetes',
+    cond_other: '💊 Other',
+    meds: 'Regular Medications',
+    meds_ph: 'e.g. Amlodipine 5mg morning',
+    next: 'Next →',
+    back: '← Back',
+
+    goal_weight: 'Target Weight (kg)',
+    months: 'Duration (months)',
+    activity: 'Activity Level',
+    activity_opts: ['🪑 Sedentary, little movement','🚶 Light exercise occasionally','🏃 Regular exercise','💪 Daily exercise','🔥 Very intense exercise'],
+    cal_target_label: 'Daily Calorie Target (adjustable)',
+    cal_target_hint: 'Auto-recommended, but you can adjust',
+    calc_bmi: 'BMI',
+    calc_bmr: 'BMR (Baseline)',
+    calc_tdee: 'TDEE (Active)',
+    calc_target: '🎯 Daily Calorie Target',
+    calc_loss: 'Expected loss',
+    calc_loss_unit: 'kg/week',
+
+    schedule_hint: 'Confirm your exercise schedule — you can edit this later',
+
+    line_token: 'Line Notify Token',
+    line_token_hint: 'Get token at notify.line.me → Personal Access Tokens',
+    notif_title: '⏰ Notification Times',
+    notif_morning: 'Morning (BP check)',
+    notif_noon: 'Noon (log food)',
+    notif_evening: 'Evening (BP check)',
+    notif_night: 'Night (daily summary)',
+    line_name: 'Your Line Display Name',
+    line_name_ph: 'e.g. PIM',
+    line_name_hint: 'Used in notification messages',
+    finish_btn: '🌿 Start Using PIMOU!',
+
+    good_morning: 'Good Morning 🌿',
+    good_afternoon: 'Good Afternoon ☀️',
+    good_evening: 'Good Evening 🌙',
+
+    progress_label: 'Progress',
+    day_label: 'Day',
+    remaining: 'Left',
+    goal: 'Goal',
+    today_done: "Today's Checklist",
+    this_week: 'This Week',
+    latest_stats: 'Latest Stats',
+    bp_today: "Today's BP",
+    bp_avg: '📊 Daily Average',
+    morning_avg: 'Morning Avg',
+    evening_avg: 'Evening Avg',
+
+    stat_weight: 'Weight',
+    stat_cal: "Today's Cal",
+    stat_bp: 'Blood Pressure',
+    stat_bmi: 'BMI',
+
+    check_cardio: 'Cardio + HIIT',
+    check_cardio_time: 'Morning · 30 min',
+    check_pt: 'PT at Gym',
+    check_pt_time: 'Evening · 60 min',
+    check_pilates: 'Pilates',
+    check_walk: 'Park Walk',
+    check_bp_morning: 'Morning BP Check',
+    check_bp_morning_time: 'Before 9am',
+    check_bp_evening: 'Evening BP Check',
+    check_bp_evening_time: 'Before 8pm',
+    check_food_log: 'Log Food',
+    check_food_log_time: 'Every meal',
+
+    log_weight: '⚖️ Weight',
+    log_food: '🍽️ Food',
+    log_bp: '❤️ Blood Pressure',
+    log_exercise: '💪 Exercise',
+
+    log_weight_title: "Log Today's Weight",
+    log_weight_hint: 'Weigh in the morning, after bathroom, before eating',
+    log_waist: 'Waist (cm)',
+    log_waist_hint: 'Every 2 weeks',
+    log_hip: 'Hip (cm)',
+    log_bf: 'Body Fat%',
+    log_bf_hint: '(if available)',
+    save_weight_btn: '💾 Save Weight',
+    current_weight: 'Current (kg)',
+    goal_weight_disp: 'Goal (kg)',
+    lost_so_far: 'Lost So Far (kg)',
+
+    cal_eaten: 'Consumed',
+    cal_remaining: 'Remaining',
+    meal_breakfast: 'Breakfast',
+    meal_lunch: 'Lunch',
+    meal_dinner: 'Dinner',
+    meal_snack: 'Snacks',
+    add_food: '+ Add Food',
+
+    bp_warning: '⚠️ Important',
+    bp_warning_text: 'Take BP twice in the morning, 1–2 min apart\nSame for evening · Rest 5 min before measuring',
+    bp_m1: '🌅 Morning — Reading 1',
+    bp_m2: '🌅 Morning — Reading 2',
+    bp_e1: '🌆 Evening — Reading 1',
+    bp_e2: '🌆 Evening — Reading 2',
+    bp_sys: 'Systolic',
+    bp_dia: 'Diastolic',
+    bp_pulse: 'Pulse',
+    bp_high_warn: '⚠️ Systolic is high! Rest and re-measure.',
+    save_bp_btn: '💾 Save Blood Pressure',
+
+    rpe_label: 'Exertion Level',
+    rpe_1: '😴 Easy', rpe_2: '😐 Moderate', rpe_3: '💪 Hard', rpe_4: '🔥 Max',
+    note_label: 'Notes',
+    note_ph: 'e.g. Increased dumbbell to 6kg',
+    save_exercise_btn: '💾 Save Exercise Log',
+
+    prog_weight: 'Weight',
+    prog_cal: 'Calories',
+    prog_bp: 'Blood Pressure',
+    weight_chart_title: '📉 Weekly Weight Trend',
+    cal_chart_title: '🔥 Daily Calories (Last 7 Days)',
+    bp_chart_title: '❤️ Blood Pressure (14 Days)',
+    week_summary_title: '📊 This Week Summary',
+    ws_start: 'Starting Weight',
+    ws_current: 'Latest Weight',
+    ws_lost: 'Lost This Week',
+    ws_bmi: 'Current BMI',
+    bp_avg_7: '🩺 7-Day Average',
+    avg_sys: 'Avg Systolic',
+    avg_dia: 'Avg Diastolic',
+    bp_status: 'Latest Status',
+
+    exercise_plan_title: 'Weekly Exercise Schedule',
+    meal_plan_title: 'Meal Plan',
+    avoid_title: '❌ Avoid',
+    meal_breakfast_cal: 'Breakfast (~350–400 kcal)',
+    meal_lunch_cal: 'Lunch (~500–550 kcal)',
+    meal_dinner_cal: 'Dinner (~450–500 kcal)',
+    avoid_items: ['Instant noodles','Thai iced tea','Fried food','Processed sausage','Heavy fish sauce','Daily coconut milk'],
+
+    settings_profile: 'Profile',
+    settings_personal: 'Personal Info',
+    settings_goal: 'Goal',
+    settings_notifications: 'Notifications',
+    settings_line: 'Line Notify',
+    settings_data: 'Data',
+    settings_export: 'Export Data as CSV',
+    settings_delete: 'Delete All Data',
+    settings_line_connected: 'Connected ✓',
+    settings_line_setup: 'Set Up',
+
+    nav_home: 'Home',
+    nav_log: 'Log',
+    nav_progress: 'Progress',
+    nav_plan: 'Plan',
+    nav_settings: 'Settings',
+
+    modal_add_food: '+ Add Food',
+    food_name: 'Food Name',
+    food_name_ph: 'e.g. Grilled Chicken Rice',
+    food_cal: 'Calories (kcal)',
+    food_cal_ph: 'e.g. 450',
+    food_protein: 'Protein (g)',
+    food_protein_ph: 'e.g. 35',
+    quick_foods_label: 'Quick Add (tap to select)',
+    add_btn: '+ Add',
+    cancel_btn: 'Cancel',
+
+    morning: 'Morning',
+    afternoon: 'Afternoon',
+    evening: 'Evening',
+    day_short: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+    day_full: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],
+
+    toast_saved: '✓ Saved + synced to Sheets! 📊',
+    toast_offline: '✓ Saved (offline)',
+    toast_weight_saved: '✓ Weight saved + synced! 📊',
+    toast_bp_saved: '✓ BP saved + synced! 📊',
+    toast_exercise_saved: '✓ Exercise saved + synced! 📊',
+    toast_food_added: '✓ Food added!',
+    toast_export: '✓ Export successful!',
+    toast_deleted: '🗑️ Data deleted',
+    toast_done: '✓ Done!',
+    toast_cancel: 'Cancelled',
+    toast_need_weight: '⚠️ Please enter your weight',
+    toast_need_food: '⚠️ Please enter a food name',
+    syncing: 'Syncing...',
+    confirm_delete: '⚠️ Delete all data? This cannot be undone.',
+
+    version: 'PIMOU v1.0 · Made with 🌿',
+
+    lang_toggle: 'ไทย',
+  }
+};
+
+function t(key) {
+  return I18N[currentLang][key] || I18N['th'][key] || key;
+}
+
+function toggleLang() {
+  currentLang = currentLang === 'th' ? 'en' : 'th';
+  localStorage.setItem('pimou_lang', currentLang);
+  applyLang();
+}
+
+function applyLang() {
+  // Update lang toggle buttons
+  const wb = document.getElementById('welcome-lang-btn');
+  if (wb) wb.textContent = t('lang_toggle');
+  const ab = document.getElementById('lang-btn');
+  if (ab) ab.textContent = t('lang_toggle');
+
+  // Update html lang attribute
+  document.documentElement.lang = currentLang;
+
+  // Apply all data-i18n
+  applyDataI18n();
+
+  // Re-render dynamic sections
+  const currentScreen = document.querySelector('.screen.active')?.id;
+  if (currentScreen === 'screen-app') {
+    updateAppUI();
+    renderTodayChecklist();
+    renderWeekDays();
+    renderFullWeekPlan();
+    renderExerciseLogChecklist();
+    updateCalDisplay();
+    refreshStaticText();
+  } else if (currentScreen === 'screen-onboard') {
+    setOnboardStep(currentStep);
+  } else if (currentScreen === 'screen-welcome') {
+    refreshWelcomeText();
+  }
+}
+
+function refreshWelcomeText() {
+  const desc = document.getElementById('welcome-desc');
+  if (desc) desc.innerHTML = t('welcome_desc').replace('\n', '<br>');
+  const startBtn = document.getElementById('welcome-start-btn');
+  if (startBtn) startBtn.textContent = t('welcome_start');
+  const existBtn = document.getElementById('welcome-existing-btn');
+  if (existBtn) existBtn.textContent = t('welcome_existing');
+}
+
+function refreshOnboardText() {
+  // Labels updated dynamically in setOnboardStep
+}
+
+function refreshStaticText() {
+  // Nav
+  const navKeys = ['home','log','progress','plan','settings'];
+  navKeys.forEach(k => {
+    const el = document.querySelector(`#nav-${k} .nav-label`);
+    if (el) el.textContent = t('nav_' + k);
+  });
+
+  // Section titles on home tab
+  const sectionTitles = document.querySelectorAll('#tab-home .section-title');
+  const homeTitles = ['today_done','this_week','latest_stats','bp_today'];
+  sectionTitles.forEach((el, i) => { if (homeTitles[i]) el.textContent = t(homeTitles[i]); });
+
+  // Stat cards
+  const statLabels = document.querySelectorAll('.stat-label');
+  const statKeys = ['stat_weight','stat_cal','stat_bp','stat_bmi'];
+  statLabels.forEach((el, i) => { if (statKeys[i]) el.textContent = t(statKeys[i]); });
+
+  // BP card
+  const bpCard = document.querySelector('.bp-card-title');
+  if (bpCard) bpCard.textContent = t('bp_avg');
+  const morningAvg = document.querySelector('#bp-morning-avg')?.parentElement?.querySelector('.bp-reading-label');
+  const eveningAvg = document.querySelector('#bp-evening-avg')?.parentElement?.querySelector('.bp-reading-label');
+  if (morningAvg) morningAvg.textContent = t('morning_avg');
+  if (eveningAvg) eveningAvg.textContent = t('evening_avg');
+
+  // Log tabs
+  const logTabs = document.querySelectorAll('.log-tab');
+  const logKeys = ['log_weight','log_food','log_bp','log_exercise'];
+  logTabs.forEach((el, i) => { if (logKeys[i]) el.textContent = t(logKeys[i]); });
+
+  // Progress tabs
+  const progTabs = document.querySelectorAll('.progress-tab');
+  const progKeys = ['prog_weight','prog_cal','prog_bp'];
+  progTabs.forEach((el, i) => { if (progKeys[i]) el.textContent = t(progKeys[i]); });
+
+  // Settings
+  const settingsSections = document.querySelectorAll('.section-title');
+  // We update specific elements by ID instead
+  ['set-profile-section','set-notif-section','set-data-section'].forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = t(['settings_profile','settings_notifications','settings_data'][i]);
+  });
+}
+
+const QUICK_FOODS = [
+  { name: 'ไข่ต้ม 1 ฟอง', cal: 70, protein: 6 },
+  { name: 'กล้วย', cal: 90, protein: 1 },
+  { name: 'ข้าวสวย 1 ทัพพี', cal: 140, protein: 3 },
+  { name: 'ข้าวกล้อง 1 ทัพพี', cal: 120, protein: 3 },
+  { name: 'ไก่อกนึ่ง 100g', cal: 165, protein: 31 },
+  { name: 'ปลานึ่ง 100g', cal: 110, protein: 22 },
+  { name: 'Overnight Oats', cal: 350, protein: 12 },
+  { name: 'Greek Yogurt', cal: 90, protein: 10 },
+  { name: 'Edamame (7-11)', cal: 100, protein: 9 },
+  { name: 'ต้มยำ 1 ถ้วย', cal: 100, protein: 8 },
+  { name: 'ผัดผักบุ้ง', cal: 90, protein: 3 },
+  { name: 'ทูน่ากระป๋อง', cal: 130, protein: 28 },
+  { name: 'ถั่วอัลมอนด์ 1 กำมือ', cal: 150, protein: 6 },
+  { name: 'แอปเปิ้ล', cal: 80, protein: 0 },
+  { name: 'นมถั่วเหลืองไม่หวาน', cal: 70, protein: 5 },
+];
+
+// WEEK_SCHEDULE — day names pulled from i18n at render time
+const WEEK_SCHEDULE_BASE = [
+  { morning: '🏃 Cardio+HIIT', evening: '😴 Rest',      pt: false, pilates: false },
+  { morning: '🏃 Cardio+HIIT', evening: '💪 PT Gym',    pt: true,  pilates: false },
+  { morning: '🏃 Cardio+HIIT', evening: '🧘 Pilates',   pt: false, pilates: true  },
+  { morning: '🏃 Cardio+HIIT', evening: '💪 PT Gym',    pt: true,  pilates: false },
+  { morning: '🏃 Cardio+HIIT', evening: '😴 Rest',      pt: false, pilates: false },
+  { morning: '😴 Rest', afternoon: '🧘 Pilates', evening: '🚶 Walk', pt: false, pilates: true },
+  { morning: '😴 Rest', evening: '🚶 Walk 4–6km',       pt: false, pilates: false },
+];
+
+function getWeekSchedule() {
+  const shorts = t('day_short');
+  const fulls  = t('day_full');
+  return WEEK_SCHEDULE_BASE.map((d, i) => ({ ...d, day: fulls[i], short: shorts[i] }));
+}
+
+// Keep legacy reference working
+Object.defineProperty(window, 'WEEK_SCHEDULE', { get: () => getWeekSchedule() });
+
+let charts = {};
+
+// ══════════════════════════════
+// CONFIG — ใส่ URL Apps Script ที่นี่
+// ══════════════════════════════
+const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_WEB_APP_URL'; // ← วาง URL ที่นี่หลัง Deploy
+
+// ══════════════════════════════
+// STORAGE — localStorage + Google Sheets sync
+// ══════════════════════════════
+
+/** บันทึก local ก่อน แล้ว sync ขึ้น Sheets */
+function saveData() {
+  localStorage.setItem('pimou_profile', JSON.stringify(profile));
+  localStorage.setItem('pimou_logs', JSON.stringify(logs));
+}
+
+function loadData() {
+  const p = localStorage.getItem('pimou_profile');
+  const l = localStorage.getItem('pimou_logs');
+  if (p) profile = JSON.parse(p);
+  if (l) logs = JSON.parse(l);
+}
+
+/** POST ไป Apps Script */
+async function syncToSheets(action, data) {
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_WEB_APP_URL') return;
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, ...data }),
+      mode: 'no-cors', // Apps Script ต้องใช้ no-cors
+    });
+    return true;
+  } catch (err) {
+    console.warn('Sync failed (offline?):', err);
+    return false;
+  }
+}
+
+/** GET จาก Apps Script */
+async function fetchFromSheets(action, params = {}) {
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_WEB_APP_URL') return null;
+  try {
+    const qs  = new URLSearchParams({ action, ...params }).toString();
+    const res = await fetch(`${APPS_SCRIPT_URL}?${qs}`);
+    return await res.json();
+  } catch (err) {
+    console.warn('Fetch failed:', err);
+    return null;
+  }
+}
+
+// ══════════════════════════════
+// NAVIGATION
+// ══════════════════════════════
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function loadApp() {
+  loadData();
+  goTo('screen-app');
+  updateAppUI();
+  renderWeekDays();
+  renderTodayChecklist();
+  renderFullWeekPlan();
+  renderExerciseLogChecklist();
+  updateWeightDisplay();
+  updateCalDisplay();
+  setTimeout(renderCharts, 100);
+}
+
+function setTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.log-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('nav-' + tab).classList.add('active');
+  if (tab === 'progress') setTimeout(renderCharts, 100);
+}
+
+// ══════════════════════════════
+// ONBOARDING
+// ══════════════════════════════
+function setOnboardStep(n) {
+  currentStep = n;
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById('step-' + i);
+    if (el) el.style.display = (i === n) ? 'block' : 'none';
+  }
+  const titles = t('step_titles');
+  const steps  = t('step_labels');
+  document.getElementById('onboard-title').textContent = titles[n-1];
+  document.getElementById('onboard-step-label').textContent = steps[n-1];
+  const dots = document.querySelectorAll('#progress-dots .dot');
+  dots.forEach((d, i) => {
+    d.classList.remove('active', 'done');
+    d.style.width = '12px';
+    if (i + 1 < n) d.classList.add('done');
+    if (i + 1 === n) { d.classList.add('active'); d.style.width = '24px'; }
+  });
+  if (n === 3) renderExerciseScheduleOnboard();
+}
+
+function nextStep(n) {
+  if (n > currentStep) {
+    // Save data when moving forward
+    if (currentStep === 1) saveStep1();
+    if (currentStep === 2) saveStep2();
+  }
+  setOnboardStep(n);
+}
+
+function saveStep1() {
+  profile.name = document.getElementById('inp-name').value || 'คุณ';
+  profile.gender = gender;
+  profile.age = parseFloat(document.getElementById('inp-age').value) || 32;
+  profile.height = parseFloat(document.getElementById('inp-height').value) || 155;
+  profile.weight = parseFloat(document.getElementById('inp-weight').value) || 92;
+  profile.bodyFat = parseFloat(document.getElementById('inp-bf').value) || null;
+  profile.conditions = { ...conditions };
+  profile.meds = document.getElementById('inp-meds').value;
+}
+
+function saveStep2() {
+  profile.goalWeight = parseFloat(document.getElementById('inp-goal-weight').value) || 72;
+  profile.months = parseFloat(document.getElementById('inp-months').value) || 6;
+  profile.activityFactor = parseFloat(document.getElementById('inp-activity').value) || 1.55;
+  const customCal = document.getElementById('inp-cal-target').value;
+  profile.calTarget = customCal ? parseFloat(customCal) : calcTarget();
+  profile.startDate = profile.startDate || new Date().toISOString().split('T')[0];
+  profile.startWeight = profile.startWeight || profile.weight;
+}
+
+function setGender(g) {
+  gender = g;
+  document.getElementById('btn-female').classList.toggle('active', g === 'female');
+  document.getElementById('btn-male').classList.toggle('active', g === 'male');
+  updateCalcs();
+}
+
+function toggleCheck(id, key) {
+  const el = document.getElementById(id);
+  const cb = document.getElementById('cb-' + id.replace('chk-', ''));
+  conditions[key] = !conditions[key];
+  el.classList.toggle('checked', conditions[key]);
+  cb.textContent = conditions[key] ? '✓' : '';
+}
+
+function calcBMR() {
+  const w = parseFloat(document.getElementById('inp-weight')?.value) || profile.weight || 92;
+  const h = parseFloat(document.getElementById('inp-height')?.value) || profile.height || 155;
+  const a = parseFloat(document.getElementById('inp-age')?.value) || profile.age || 32;
+  const g = gender || profile.gender || 'female';
+  if (g === 'female') return (10 * w) + (6.25 * h) - (5 * a) - 161;
+  return (10 * w) + (6.25 * h) - (5 * a) + 5;
+}
+
+function calcTarget() {
+  const af = parseFloat(document.getElementById('inp-activity')?.value) || profile.activityFactor || 1.55;
+  const tdee = calcBMR() * af;
+  return Math.round(tdee - 600);
+}
+
+function updateCalcs() {
+  const w = parseFloat(document.getElementById('inp-weight')?.value) || 0;
+  const h = parseFloat(document.getElementById('inp-height')?.value) || 0;
+  const gw = parseFloat(document.getElementById('inp-goal-weight')?.value) || 0;
+  const months = parseFloat(document.getElementById('inp-months')?.value) || 6;
+
+  if (!w || !h) return;
+  const bmi = (w / ((h / 100) ** 2)).toFixed(1);
+  const bmr = Math.round(calcBMR());
+  const af = parseFloat(document.getElementById('inp-activity')?.value) || 1.55;
+  const tdee = Math.round(bmr * af);
+  const target = Math.round(tdee - 600);
+  const deficit = tdee - target;
+  const weeklyLoss = ((deficit * 7) / 7700).toFixed(2);
+
+  const bmiEl = document.getElementById('calc-bmi');
+  const bmrEl = document.getElementById('calc-bmr');
+  const tdeeEl = document.getElementById('calc-tdee');
+  const targetEl = document.getElementById('calc-target');
+  const lossEl = document.getElementById('calc-loss-rate');
+
+  if (bmiEl) {
+    let bmiCat = bmi > 30 ? '🔴 Obese' : bmi > 25 ? '🟡 Overweight' : '🟢 Normal';
+    bmiEl.textContent = bmi + ' ' + bmiCat;
+    bmrEl.textContent = bmr.toLocaleString() + ' kcal';
+    tdeeEl.textContent = tdee.toLocaleString() + ' kcal';
+    targetEl.textContent = target.toLocaleString() + ' kcal';
+    lossEl.textContent = weeklyLoss + ' kg/สัปดาห์';
+  }
+
+  const calTargetEl = document.getElementById('inp-cal-target');
+  if (calTargetEl && !calTargetEl.value) calTargetEl.placeholder = target.toString();
+}
+
+function renderExerciseScheduleOnboard() {
+  const wrap = document.getElementById('exercise-schedule');
+  if (!wrap) return;
+  wrap.innerHTML = WEEK_SCHEDULE.map((d, i) => `
+    <div style="background:var(--card);border-radius:14px;border:1.5px solid var(--border);padding:14px 16px;margin-bottom:8px;">
+      <div style="font-size:13px;font-weight:700;color:var(--green-700);margin-bottom:6px;">${d.day}</div>
+      <div style="font-size:12px;color:var(--text-mid);">🌅 เช้า: ${d.morning}</div>
+      ${d.afternoon ? `<div style="font-size:12px;color:var(--text-mid);">☀️ บ่าย: ${d.afternoon}</div>` : ''}
+      <div style="font-size:12px;color:var(--text-mid);">🌆 เย็น: ${d.evening}</div>
+    </div>`).join('');
+}
+
+function finishOnboard() {
+  saveStep1(); saveStep2();
+  profile.lineToken = document.getElementById('inp-line-token').value;
+  profile.lineName = document.getElementById('inp-line-name').value || profile.name;
+  profile.notifTimes = {
+    morning: document.getElementById('notif-morning').value,
+    noon: document.getElementById('notif-noon').value,
+    evening: document.getElementById('notif-evening').value,
+    night: document.getElementById('notif-night').value,
+  };
+  saveData();
+  // Sync profile ไป Google Sheets
+  syncToSheets('save_profile', profile);
+  loadApp();
+}
+
+// ══════════════════════════════
+// APP UI
+// ══════════════════════════════
+function updateAppUI() {
+  const hour = new Date().getHours();
+  const greet = hour < 12 ? t('good_morning') : hour < 17 ? t('good_afternoon') : t('good_evening');
+  document.getElementById('app-greeting').textContent = greet;
+  document.getElementById('app-name').textContent = profile.name || 'คุณ';
+
+  const sw = profile.startWeight || profile.weight || 92;
+  const gw = profile.goalWeight || 72;
+  const cw = getLatestWeight() || sw;
+  const totalNeeded = sw - gw;
+  const lost = sw - cw;
+  const pct = Math.max(0, Math.min(100, Math.round((lost / totalNeeded) * 100)));
+
+  document.getElementById('goal-bar-fill').style.width = pct + '%';
+  document.getElementById('bar-label-right').textContent = pct + '%';
+
+  const start = profile.startDate ? new Date(profile.startDate) : new Date();
+  const today = new Date();
+  const dayNum = Math.floor((today - start) / (1000 * 60 * 60 * 24)) + 1;
+  document.getElementById('tag-day').textContent = 'Day ' + dayNum;
+  document.getElementById('tag-left').textContent = 'เหลือ ' + Math.max(0, (cw - gw).toFixed(1)) + ' kg';
+  document.getElementById('tag-cal').textContent = 'เป้า ' + (profile.calTarget || 1850) + ' kcal';
+
+  // Stats
+  const bmi = cw && profile.height ? (cw / ((profile.height/100)**2)).toFixed(1) : '—';
+  document.getElementById('stat-weight').textContent = cw ? cw.toFixed(1) : '—';
+  document.getElementById('stat-bmi').textContent = bmi;
+
+  const bmiNum = parseFloat(bmi);
+  let bmiCat = '—'; let bmiClass = 'ok';
+  if (bmiNum > 30) { bmiCat = 'Obese'; bmiClass = 'up'; }
+  else if (bmiNum > 25) { bmiCat = 'Overweight'; bmiClass = 'up'; }
+  else if (bmiNum >= 18.5) { bmiCat = 'Normal'; bmiClass = 'down'; }
+  document.getElementById('stat-bmi-cat').textContent = bmiCat;
+  document.getElementById('stat-bmi-cat').className = 'stat-delta ' + bmiClass;
+
+  // Update settings display
+  if (profile.name) {
+    const settingProfile = document.getElementById('set-profile-val');
+    if (settingProfile) settingProfile.textContent = profile.name + ', ' + (profile.age||'—') + 'ปี';
+    const settingGoal = document.getElementById('set-goal-val');
+    if (settingGoal) settingGoal.textContent = 'เป้า ' + (profile.goalWeight||'—') + ' kg';
+    if (profile.lineToken) {
+      const settingLine = document.getElementById('set-line-val');
+      if (settingLine) settingLine.textContent = 'เชื่อมต่อแล้ว ✓';
+    }
+  }
+}
+
+function getLatestWeight() {
+  if (!logs.weights || logs.weights.length === 0) return profile.weight || null;
+  return logs.weights[logs.weights.length - 1].weight;
+}
+
+function getTodayKey() {
+  return new Date().toISOString().split('T')[0];
+}
+
+// ══════════════════════════════
+// TODAY CHECKLIST
+// ══════════════════════════════
+function renderTodayChecklist() {
+  const today = new Date().getDay(); // 0=Sun
+  const dayMap = [6,0,1,2,3,4,5]; // Sun=6, Mon=0...
+  const dayIdx = dayMap[today];
+  const sched = WEEK_SCHEDULE[dayIdx];
+  const key = getTodayKey();
+  const todayEx = logs.exercise[key] || {};
+
+  const items = [];
+  if (sched.morning.includes('Cardio')) items.push({ id: 'cardio', name: 'Cardio + HIIT', time: 'เช้า 30 นาที', icon: '🏃' });
+  if (sched.pt) items.push({ id: 'pt', name: 'PT at Gym', time: 'เย็น 60 นาที', icon: '💪' });
+  if (sched.pilates) items.push({ id: 'pilates', name: 'Pilates', time: sched.afternoon ? 'บ่าย' : 'เย็น', icon: '🧘' });
+  if (sched.evening.includes('เดิน')) items.push({ id: 'walk', name: 'เดินสวน', time: 'เย็น', icon: '🚶' });
+  items.push({ id: 'bp_morning', name: 'วัดความดันเช้า', time: 'ก่อน 9 โมง', icon: '❤️' });
+  items.push({ id: 'bp_evening', name: 'วัดความดันเย็น', time: 'ก่อน 2 ทุ่ม', icon: '❤️' });
+  items.push({ id: 'food_log', name: 'บันทึกอาหาร', time: 'ทุกมื้อ', icon: '🍽️' });
+
+  const wrap = document.getElementById('today-checklist');
+  wrap.innerHTML = items.map(it => {
+    const done = todayEx[it.id];
+    return `<div class="check-item ${done?'done':''}" id="ci-${it.id}" onclick="toggleChecklist('${it.id}')">
+      <div class="check-circle">${done ? '✓' : ''}</div>
+      <div class="check-info">
+        <div class="check-name">${it.icon} ${it.name}</div>
+        <div class="check-time">${it.time}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleChecklist(id) {
+  const key = getTodayKey();
+  if (!logs.exercise[key]) logs.exercise[key] = {};
+  logs.exercise[key][id] = !logs.exercise[key][id];
+  saveData();
+  renderTodayChecklist();
+  showToast(logs.exercise[key][id] ? '✓ เสร็จแล้ว!' : 'ยกเลิกแล้ว');
+}
+
+// ══════════════════════════════
+// WEEK DAYS (HOME)
+// ══════════════════════════════
+function renderWeekDays() {
+  const wrap = document.getElementById('week-days-home');
+  if (!wrap) return;
+  const today = new Date();
+  const todayDay = today.getDay();
+  const dayNames = ['อา','จ','อ','พ','พฤ','ศ','ส'];
+
+  wrap.innerHTML = WEEK_SCHEDULE.map((d, i) => {
+    const jsDay = [1,2,3,4,5,6,0][i]; // Mon=1...Sun=0
+    const isToday = jsDay === todayDay;
+    const date = new Date(today);
+    date.setDate(today.getDate() + (i - ([1,2,3,4,5,6,0].indexOf(todayDay))));
+    const icons = [];
+    if (d.morning.includes('Cardio')) icons.push('🏃');
+    if (d.pt) icons.push('💪');
+    if (d.pilates) icons.push('🧘');
+    if (d.evening.includes('เดิน')) icons.push('🚶');
+    return `<div class="day-card ${isToday?'today':''}">
+      <div class="day-name">${d.short}</div>
+      <div class="day-num">${date.getDate()}</div>
+      <div class="day-icons">${icons.map(ic=>`<span class="day-icon">${ic}</span>`).join('')}</div>
+      ${isToday ? '<div class="day-dot"></div>' : ''}
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════
+// FULL WEEK PLAN
+// ══════════════════════════════
+function renderFullWeekPlan() {
+  const wrap = document.getElementById('full-week-plan');
+  if (!wrap) return;
+  wrap.innerHTML = WEEK_SCHEDULE.map(d => `
+    <div style="background:var(--card);border-radius:16px;border:1.5px solid var(--border);padding:16px;margin-bottom:10px;">
+      <div style="font-size:14px;font-weight:700;color:var(--green-700);margin-bottom:8px;">${d.day}</div>
+      <div style="font-size:12px;color:var(--text-mid);margin-bottom:3px;">🌅 เช้า — ${d.morning}</div>
+      ${d.afternoon ? `<div style="font-size:12px;color:var(--text-mid);margin-bottom:3px;">☀️ บ่าย — ${d.afternoon}</div>` : ''}
+      <div style="font-size:12px;color:var(--text-mid);">🌆 เย็น — ${d.evening}</div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════
+// EXERCISE LOG CHECKLIST
+// ══════════════════════════════
+function renderExerciseLogChecklist() {
+  const wrap = document.getElementById('exercise-checklist-log');
+  if (!wrap) return;
+  const today = new Date().getDay();
+  const dayMap = [6,0,1,2,3,4,5];
+  const sched = WEEK_SCHEDULE[dayMap[today]];
+  const key = getTodayKey();
+  const todayEx = logs.exercise[key] || {};
+
+  const items = [];
+  if (sched.morning.includes('Cardio')) items.push({ id: 'cardio', name: '🏃 Cardio + HIIT 30 นาที' });
+  if (sched.pt) items.push({ id: 'pt', name: '💪 PT at Gym 60 นาที' });
+  if (sched.pilates) items.push({ id: 'pilates', name: '🧘 Pilates' });
+  if (sched.evening.includes('เดิน')) items.push({ id: 'walk', name: '🚶 เดินสวน' });
+
+  wrap.innerHTML = `<div style="margin-bottom:16px;">${items.map(it => {
+    const done = todayEx[it.id];
+    return `<div class="check-item ${done?'done':''}" onclick="toggleChecklist('${it.id}');renderExerciseLogChecklist()">
+      <div class="check-circle">${done?'✓':''}</div>
+      <div class="check-info"><div class="check-name">${it.name}</div></div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+// ══════════════════════════════
+// LOG TABS
+// ══════════════════════════════
+function setLogTab(tab) {
+  currentLogTab = tab;
+  ['weight','food','bp','exercise'].forEach(t => {
+    document.getElementById('log-' + t).style.display = t === tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('.log-tab').forEach((btn, i) => {
+    btn.classList.toggle('active', ['weight','food','bp','exercise'][i] === tab);
+  });
+  if (tab === 'food') updateCalDisplay();
+}
+
+// ══════════════════════════════
+// WEIGHT SAVE
+// ══════════════════════════════
+function saveWeight() {
+  const w = parseFloat(document.getElementById('log-weight-input').value);
+  if (!w) { showToast('⚠️ กรุณากรอกน้ำหนัก'); return; }
+  const entry = {
+    date: getTodayKey(),
+    weight: w,
+    waist: parseFloat(document.getElementById('log-waist-input').value) || null,
+    hip: parseFloat(document.getElementById('log-hip-input').value) || null,
+    bodyFat: parseFloat(document.getElementById('log-bf-input').value) || null,
+  };
+  logs.weights = logs.weights.filter(e => e.date !== entry.date);
+  logs.weights.push(entry);
+  logs.weights.sort((a,b) => a.date.localeCompare(b.date));
+  saveData();
+  updateAppUI();
+  updateWeightDisplay();
+  showToast('✓ บันทึกแล้ว! กำลัง sync...');
+  // Sync ไป Google Sheets
+  syncToSheets('save_weight', entry).then(ok => {
+    showToast(ok ? '✓ บันทึก + sync Sheets แล้ว! 📊' : '✓ บันทึกแล้ว (offline)');
+  });
+  document.getElementById('log-weight-input').value = '';
+}
+
+function updateWeightDisplay() {
+  const cw = getLatestWeight();
+  const gw = profile.goalWeight || 72;
+  const sw = profile.startWeight || profile.weight || 92;
+  document.getElementById('disp-current-weight').textContent = cw ? cw.toFixed(1) : '—';
+  document.getElementById('disp-goal-weight').textContent = gw;
+  document.getElementById('disp-lost').textContent = cw ? Math.max(0, sw - cw).toFixed(1) : '—';
+
+  document.getElementById('stat-weight').textContent = cw ? cw.toFixed(1) : '—';
+  if (logs.weights.length >= 2) {
+    const prev = logs.weights[logs.weights.length - 2].weight;
+    const diff = (cw - prev).toFixed(1);
+    const el = document.getElementById('stat-weight-delta');
+    el.textContent = (diff > 0 ? '+' : '') + diff + ' kg';
+    el.className = 'stat-delta ' + (diff <= 0 ? 'down' : 'up');
+  }
+
+  const bmi = cw && profile.height ? (cw / ((profile.height/100)**2)).toFixed(1) : '—';
+  document.getElementById('stat-bmi').textContent = bmi;
+  document.getElementById('ws-start').textContent = sw + ' kg';
+  document.getElementById('ws-current').textContent = (cw || sw) + ' kg';
+  document.getElementById('ws-lost').textContent = cw ? (sw - cw).toFixed(1) + ' kg' : '—';
+  document.getElementById('ws-bmi').textContent = bmi;
+}
+
+// ══════════════════════════════
+// BP SAVE
+// ══════════════════════════════
+function checkBP(fieldId) {
+  const val = parseFloat(document.getElementById(fieldId).value);
+  const prefix = fieldId.replace('-sys','');
+  const warnId = 'warn-' + prefix.replace('bp-','');
+  const warn = document.getElementById(warnId);
+  if (warn && val > 140) warn.classList.add('show');
+  else if (warn) warn.classList.remove('show');
+}
+
+function saveBP() {
+  const getVal = (id) => parseFloat(document.getElementById(id)?.value) || null;
+  const entry = {
+    date: getTodayKey(),
+    m1: { sys: getVal('bp-m1-sys'), dia: getVal('bp-m1-dia'), pul: getVal('bp-m1-pul') },
+    m2: { sys: getVal('bp-m2-sys'), dia: getVal('bp-m2-dia'), pul: getVal('bp-m2-pul') },
+    e1: { sys: getVal('bp-e1-sys'), dia: getVal('bp-e1-dia'), pul: getVal('bp-e1-pul') },
+    e2: { sys: getVal('bp-e2-sys'), dia: getVal('bp-e2-dia'), pul: getVal('bp-e2-pul') },
+  };
+  if (!logs.bp) logs.bp = [];
+  logs.bp = logs.bp.filter(e => e.date !== entry.date);
+  logs.bp.push(entry);
+  logs.bp.sort((a,b) => a.date.localeCompare(b.date));
+  saveData();
+  updateBPDisplay(entry);
+  showToast('✓ บันทึกแล้ว! กำลัง sync...');
+  syncToSheets('save_bp', entry).then(ok => {
+    showToast(ok ? '✓ บันทึกความดัน + sync แล้ว! 📊' : '✓ บันทึกแล้ว (offline)');
+  });
+}
+}
+
+function updateBPDisplay(entry) {
+  const avg = (a, b) => (a && b) ? Math.round((a + b) / 2) : (a || b || '—');
+  const mSys = avg(entry?.m1?.sys, entry?.m2?.sys);
+  const mDia = avg(entry?.m1?.dia, entry?.m2?.dia);
+  const eSys = avg(entry?.e1?.sys, entry?.e2?.sys);
+  const eDia = avg(entry?.e1?.dia, entry?.e2?.dia);
+
+  document.getElementById('bp-morning-avg').textContent = mSys !== '—' ? mSys + '/' + mDia : '—/—';
+  document.getElementById('bp-evening-avg').textContent = eSys !== '—' ? eSys + '/' + eDia : '—/—';
+
+  const allSys = [entry?.m1?.sys, entry?.m2?.sys, entry?.e1?.sys, entry?.e2?.sys].filter(Boolean);
+  const allDia = [entry?.m1?.dia, entry?.m2?.dia, entry?.e1?.dia, entry?.e2?.dia].filter(Boolean);
+  if (allSys.length) {
+    const avgSys = Math.round(allSys.reduce((a,b)=>a+b,0)/allSys.length);
+    const avgDia = Math.round(allDia.reduce((a,b)=>a+b,0)/allDia.length);
+    document.getElementById('stat-bp').textContent = avgSys + '/' + avgDia;
+    document.getElementById('stat-bp-status').textContent = avgSys > 140 ? '⚠️ สูง' : avgSys > 130 ? '⚠️ เริ่มสูง' : '✓ ปกติ';
+    document.getElementById('stat-bp-status').className = 'stat-delta ' + (avgSys > 130 ? 'up' : 'down');
+    document.getElementById('avg-sys').textContent = avgSys + ' mmHg';
+    document.getElementById('avg-dia').textContent = avgDia + ' mmHg';
+  }
+}
+
+// ══════════════════════════════
+// FOOD LOG
+// ══════════════════════════════
+let todayFoods = { breakfast: [], lunch: [], dinner: [], snack: [] };
+
+function openFoodModal(meal) {
+  currentFoodMeal = meal;
+  document.getElementById('food-modal').classList.add('open');
+  document.getElementById('food-name-input').value = '';
+  document.getElementById('food-cal-input').value = '';
+  document.getElementById('food-protein-input').value = '';
+  const qf = document.getElementById('quick-foods-list');
+  qf.innerHTML = QUICK_FOODS.map(f =>
+    `<div class="quick-food" onclick="quickAddFood('${f.name}',${f.cal},${f.protein})">${f.name} <span style="opacity:0.7">${f.cal}</span></div>`
+  ).join('');
+}
+
+function closeFoodModal() {
+  document.getElementById('food-modal').classList.remove('open');
+}
+
+function quickAddFood(name, cal, protein) {
+  document.getElementById('food-name-input').value = name;
+  document.getElementById('food-cal-input').value = cal;
+  document.getElementById('food-protein-input').value = protein;
+}
+
+function addFood() {
+  const name = document.getElementById('food-name-input').value;
+  const cal = parseFloat(document.getElementById('food-cal-input').value) || 0;
+  const protein = parseFloat(document.getElementById('food-protein-input').value) || 0;
+  if (!name) { showToast('⚠️ กรุณากรอกชื่อเมนู'); return; }
+
+  const key = getTodayKey();
+  if (!logs.food[key]) logs.food[key] = { breakfast: [], lunch: [], dinner: [], snack: [] };
+  logs.food[key][currentFoodMeal].push({ name, cal, protein });
+  saveData();
+  updateCalDisplay();
+  closeFoodModal();
+  showToast('✓ เพิ่มเมนูแล้ว!');
+  // Sync food ทั้งวันไป Sheets
+  syncToSheets('save_food', {
+    date: key,
+    meals: logs.food[key],
+    calTarget: profile.calTarget || 1850,
+  });
+}
+
+function updateCalDisplay() {
+  const key = getTodayKey();
+  const dayFood = logs.food[key] || { breakfast: [], lunch: [], dinner: [], snack: [] };
+  const meals = ['breakfast','lunch','dinner','snack'];
+  const mealNames = { breakfast: 'เช้า', lunch: 'กลางวัน', dinner: 'เย็น', snack: 'Snacks' };
+  const calIds = { breakfast: 'cal-breakfast', lunch: 'cal-lunch', dinner: 'cal-dinner', snack: 'cal-snack' };
+  const itemIds = { breakfast: 'items-breakfast', lunch: 'items-lunch', dinner: 'items-dinner', snack: 'items-snack' };
+
+  let total = 0;
+  meals.forEach(m => {
+    const items = dayFood[m] || [];
+    const mCal = items.reduce((s,f) => s + f.cal, 0);
+    total += mCal;
+    const calEl = document.getElementById(calIds[m]);
+    if (calEl) calEl.textContent = mCal + ' kcal';
+    const itemEl = document.getElementById(itemIds[m]);
+    if (itemEl) {
+      itemEl.innerHTML = items.map(f =>
+        `<div class="meal-item"><span class="meal-item-name">${f.name}</span><span class="meal-item-cal">${f.cal} kcal</span></div>`
+      ).join('');
+    }
+  });
+
+  const target = profile.calTarget || 1850;
+  const remain = target - total;
+  const pct = Math.min(100, Math.round((total / target) * 100));
+
+  const calEaten = document.getElementById('cal-eaten');
+  const calRemain = document.getElementById('cal-remain');
+  const calGoalDisp = document.getElementById('cal-goal-disp');
+  const calBar = document.getElementById('cal-bar');
+  if (calEaten) calEaten.textContent = total;
+  if (calRemain) calRemain.textContent = Math.max(0, remain);
+  if (calGoalDisp) calGoalDisp.textContent = target;
+  if (calBar) {
+    calBar.style.width = pct + '%';
+    calBar.className = 'cal-fill' + (pct > 105 ? ' over' : '');
+  }
+
+  document.getElementById('stat-cal').textContent = total || '—';
+  document.getElementById('stat-cal-status').textContent = total ? (remain >= 0 ? 'เหลือ ' + remain : 'เกิน ' + Math.abs(remain)) : '—';
+  document.getElementById('stat-cal-status').className = 'stat-delta ' + (remain >= 0 ? 'ok' : 'up');
+}
+
+// ══════════════════════════════
+// RPE
+// ══════════════════════════════
+function setRPE(n) {
+  currentRPE = n;
+  [1,2,3,4].forEach(i => document.getElementById('rpe-' + i).classList.toggle('active', i === n));
+}
+
+function saveExercise() {
+  const key = getTodayKey();
+  if (!logs.exercise[key]) logs.exercise[key] = {};
+  logs.exercise[key].rpe = currentRPE;
+  logs.exercise[key].note = document.getElementById('exercise-note').value;
+  saveData();
+  showToast('✓ บันทึกแล้ว! กำลัง sync...');
+  // Sync ไป Sheets
+  syncToSheets('save_exercise', {
+    date: key,
+    ...logs.exercise[key],
+  }).then(ok => {
+    showToast(ok ? '✓ บันทึก + sync แล้ว! 📊' : '✓ บันทึกแล้ว (offline)');
+  });
+}
+
+// ══════════════════════════════
+// PROGRESS TAB
+// ══════════════════════════════
+function setProgressTab(tab) {
+  currentProgressTab = tab;
+  ['weight','cal','bp'].forEach(t => {
+    document.getElementById('prog-' + t).style.display = t === tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('.progress-tab').forEach((btn, i) => {
+    btn.classList.toggle('active', ['weight','cal','bp'][i] === tab);
+  });
+  setTimeout(renderCharts, 50);
+}
+
+function setChartRange(range) {
+  document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  renderCharts();
+}
+
+function renderCharts() {
+  renderWeightChart();
+  renderCalChart();
+  renderBPChart();
+}
+
+function renderWeightChart() {
+  const canvas = document.getElementById('chart-weight');
+  if (!canvas || !canvas.offsetParent) return;
+  const data = logs.weights.slice(-8);
+  const labels = data.map(d => d.date.slice(5));
+  const values = data.map(d => d.weight);
+  const goal = Array(labels.length).fill(profile.goalWeight || 72);
+
+  if (charts.weight) charts.weight.destroy();
+  charts.weight = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'น้ำหนัก', data: values, borderColor: '#2d7a56', backgroundColor: 'rgba(45,122,86,0.1)', borderWidth: 2.5, pointRadius: 4, pointBackgroundColor: '#2d7a56', fill: true, tension: 0.3 },
+        { label: 'เป้าหมาย', data: goal, borderColor: '#00e676', borderDash: [5,5], borderWidth: 1.5, pointRadius: 0 },
+      ]
+    },
+    options: { plugins: { legend: { display: false } }, scales: { y: { ticks: { font: { family: 'Poppins', size: 10 } }, grid: { color: '#e0f4ec' } }, x: { ticks: { font: { family: 'Poppins', size: 10 } }, grid: { display: false } } } }
+  });
+}
+
+function renderCalChart() {
+  const canvas = document.getElementById('chart-cal');
+  if (!canvas || !canvas.offsetParent) return;
+  const days = 7;
+  const labels = [];
+  const values = [];
+  const target = profile.calTarget || 1850;
+  for (let i = days-1; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const key = d.toISOString().split('T')[0];
+    labels.push(key.slice(5));
+    const dayFood = logs.food[key];
+    const total = dayFood ? Object.values(dayFood).flat().reduce((s,f)=>s+f.cal,0) : 0;
+    values.push(total);
+  }
+  if (charts.cal) charts.cal.destroy();
+  charts.cal = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { data: values, backgroundColor: values.map(v => v > target ? '#ff6b6b' : '#2d7a56'), borderRadius: 6 },
+        { type: 'line', data: Array(days).fill(target), borderColor: '#00e676', borderDash: [4,4], borderWidth: 1.5, pointRadius: 0 }
+      ]
+    },
+    options: { plugins: { legend: { display: false } }, scales: { y: { ticks: { font: { family: 'Poppins', size: 10 } } }, x: { ticks: { font: { family: 'Poppins', size: 10 } }, grid: { display: false } } } }
+  });
+}
+
+function renderBPChart() {
+  const canvas = document.getElementById('chart-bp');
+  if (!canvas || !canvas.offsetParent) return;
+  const data = logs.bp ? logs.bp.slice(-14) : [];
+  const labels = data.map(d => d.date.slice(5));
+  const sysVals = data.map(e => {
+    const s = [e.m1?.sys, e.m2?.sys, e.e1?.sys, e.e2?.sys].filter(Boolean);
+    return s.length ? Math.round(s.reduce((a,b)=>a+b,0)/s.length) : null;
+  });
+  const diaVals = data.map(e => {
+    const s = [e.m1?.dia, e.m2?.dia, e.e1?.dia, e.e2?.dia].filter(Boolean);
+    return s.length ? Math.round(s.reduce((a,b)=>a+b,0)/s.length) : null;
+  });
+
+  if (charts.bp) charts.bp.destroy();
+  charts.bp = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Systolic', data: sysVals, borderColor: '#ff6b6b', backgroundColor: 'rgba(255,107,107,0.1)', borderWidth: 2, pointRadius: 3, fill: false, tension: 0.3 },
+        { label: 'Diastolic', data: diaVals, borderColor: '#2d7a56', backgroundColor: 'rgba(45,122,86,0.1)', borderWidth: 2, pointRadius: 3, fill: false, tension: 0.3 },
+        { label: 'เป้า Sys', data: Array(labels.length).fill(120), borderColor: '#ff6b6b', borderDash: [4,4], borderWidth: 1, pointRadius: 0 },
+      ]
+    },
+    options: { plugins: { legend: { labels: { font: { family: 'Poppins', size: 10 }, boxWidth: 10 } } }, scales: { y: { min: 60, ticks: { font: { family: 'Poppins', size: 10 } } }, x: { ticks: { font: { family: 'Poppins', size: 10 } }, grid: { display: false } } } }
+  });
+}
+
+// ══════════════════════════════
+// UTILS
+// ══════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function exportCSV() {
+  let csv = 'Date,Weight,Waist,Hip,BodyFat,BP_M1_Sys,BP_M1_Dia,BP_E1_Sys,BP_E1_Dia,Cal_Total\n';
+  const allDates = [...new Set([
+    ...logs.weights.map(w => w.date),
+    ...(logs.bp||[]).map(b => b.date),
+    ...Object.keys(logs.food||{})
+  ])].sort();
+
+  allDates.forEach(d => {
+    const w = logs.weights.find(e => e.date === d) || {};
+    const bp = (logs.bp||[]).find(e => e.date === d) || {};
+    const food = logs.food[d];
+    const calTotal = food ? Object.values(food).flat().reduce((s,f)=>s+f.cal,0) : '';
+    csv += `${d},${w.weight||''},${w.waist||''},${w.hip||''},${w.bodyFat||''},${bp.m1?.sys||''},${bp.m1?.dia||''},${bp.e1?.sys||''},${bp.e1?.dia||''},${calTotal}\n`;
+  });
+
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'pimou-export.csv'; a.click();
+  showToast('✓ Export สำเร็จ!');
+}
+
+function clearData() {
+  if (confirm('⚠️ ลบข้อมูลทั้งหมด? ไม่สามารถกู้คืนได้')) {
+    logs = { weights: [], bp: [], food: {}, exercise: {} };
+    saveData();
+    showToast('🗑️ ลบข้อมูลแล้ว');
+    updateAppUI();
+  }
+}
+
+// ══════════════════════════════
+// ══════════════════════════════
+// LANG HELPERS
+// ══════════════════════════════
+
+function toggleLangWelcome() {
+  currentLang = currentLang === 'th' ? 'en' : 'th';
+  localStorage.setItem('pimou_lang', currentLang);
+  // Update both toggle buttons
+  const wb = document.getElementById('welcome-lang-btn');
+  if (wb) wb.textContent = t('lang_toggle');
+  const ab = document.getElementById('lang-btn');
+  if (ab) ab.textContent = t('lang_toggle');
+  // Apply to welcome screen
+  refreshWelcomeText();
+}
+
+/** Apply all data-i18n attributes in DOM */
+function applyDataI18n() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const val = t(key);
+    if (val) el.textContent = val;
+  });
+  // Sync lang button text
+  const wb = document.getElementById('welcome-lang-btn');
+  if (wb) wb.textContent = t('lang_toggle');
+  const ab = document.getElementById('lang-btn');
+  if (ab) ab.textContent = t('lang_toggle');
+}
+
+// ══════════════════════════════
+// INIT
+// ══════════════════════════════
+window.addEventListener('load', () => {
+  loadData();
+  // Apply language
+  applyDataI18n();
+  refreshWelcomeText();
+
+  // Fill onboarding with existing profile if available
+  if (profile.name) {
+    document.getElementById('inp-name').value = profile.name || '';
+    document.getElementById('inp-age').value = profile.age || '';
+    document.getElementById('inp-height').value = profile.height || '';
+    document.getElementById('inp-weight').value = profile.weight || '';
+    if (profile.gender) { gender = profile.gender; setGender(gender); }
+    if (profile.goalWeight) document.getElementById('inp-goal-weight').value = profile.goalWeight;
+    if (profile.months) document.getElementById('inp-months').value = profile.months;
+    updateCalcs();
+  }
+  // Auto-load if returning user
+  if (profile.name && profile.startDate) {
+    loadApp();
+  }
+});
+</script>
+</body>
+</html>
