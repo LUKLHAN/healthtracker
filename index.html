@@ -750,40 +750,6 @@
   .toast.show { display: block; animation: toastIn 0.3s ease; }
   @keyframes toastIn { from { opacity:0; top:40px; } to { opacity:1; top:60px; } }
 
-  /* ─── Splash Screen ─────────────────────────────── */
-  #screen-splash {
-    background: linear-gradient(160deg, var(--green-900) 0%, var(--green-700) 55%, var(--green-500) 100%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-  }
-  #screen-splash .splash-logo {
-    font-size: 64px;
-    animation: splashPulse 1s ease-in-out infinite alternate;
-  }
-  #screen-splash .splash-name {
-    font-size: 28px;
-    font-weight: 800;
-    color: #fff;
-    letter-spacing: 3px;
-  }
-  #screen-splash .splash-sub {
-    font-size: 13px;
-    color: rgba(255,255,255,0.7);
-    letter-spacing: 1px;
-  }
-  #screen-splash .splash-greeting {
-    font-size: 15px;
-    color: rgba(255,255,255,0.9);
-    font-weight: 600;
-    margin-top: 8px;
-  }
-  @keyframes splashPulse {
-    from { transform: scale(1); }
-    to { transform: scale(1.1); }
-  }
 
 </style>
 </head>
@@ -795,11 +761,6 @@
 <!-- ═══════════════════════════════════
      SCREEN: WELCOME
 ═══════════════════════════════════ -->
-<!-- ═══════════════════════════════════
-     SCREEN: SPLASH (Returning User)
-═══════════════════════════════════ -->
-<div class="screen" id="screen-splash">
-  <div class="splash-logo">🌿</div>
   <div class="splash-name">PIMOU</div>
   <div class="splash-sub">Health Tracker</div>
   <div class="splash-greeting" id="splash-greeting">ยินดีต้อนรับกลับ!</div>
@@ -1102,6 +1063,12 @@
           <div class="stat-value"><span id="stat-bmi">—</span></div>
           <div class="stat-delta ok" id="stat-bmi-cat">—</div>
         </div>
+        <div class="stat-card">
+          <div class="stat-icon">👟</div>
+          <div class="stat-label">ก้าววันนี้</div>
+          <div class="stat-value" id="stat-steps" style="font-size:18px;">—</div>
+          <div class="stat-delta" id="stat-steps-status">—</div>
+        </div>
       </div>
 
       <!-- BP Summary -->
@@ -1323,6 +1290,34 @@
       <!-- Exercise Log -->
       <div id="log-exercise" style="display:none">
         <div id="exercise-checklist-log"></div>
+
+        <!-- Steps + Cal Burned row -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px;">
+          <div class="field-group" style="margin:0">
+            <label class="field-label">👟 ก้าววันนี้</label>
+            <input class="field-input" type="number" id="inp-steps" placeholder="เช่น 8500"
+              style="font-size:18px;font-weight:700;text-align:center;">
+            <div style="font-size:11px;color:var(--text-soft);margin-top:4px;text-align:center;">กรอกจากนาฬิกา</div>
+          </div>
+          <div class="field-group" style="margin:0">
+            <label class="field-label">🔥 Cal เผาผลาญ</label>
+            <input class="field-input" type="number" id="inp-cal-burn" placeholder="0"
+              style="font-size:18px;font-weight:700;text-align:center;" oninput="updateCalBurnDisplay()">
+            <div style="font-size:11px;color:var(--text-soft);margin-top:4px;text-align:center;">
+              <span id="cal-burn-hint">ปรับได้ตามจริง</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cal burn quick presets -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+          <button onclick="setCalBurn(200)" style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--green-500);background:transparent;color:var(--green-700);font-size:12px;cursor:pointer;">Cardio 200</button>
+          <button onclick="setCalBurn(300)" style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--green-500);background:transparent;color:var(--green-700);font-size:12px;cursor:pointer;">Cardio 300</button>
+          <button onclick="setCalBurn(150)" style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--green-500);background:transparent;color:var(--green-700);font-size:12px;cursor:pointer;">Weight 150</button>
+          <button onclick="setCalBurn(250)" style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--green-500);background:transparent;color:var(--green-700);font-size:12px;cursor:pointer;">Weight 250</button>
+          <button onclick="setCalBurn(80)" style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--green-500);background:transparent;color:var(--green-700);font-size:12px;cursor:pointer;">เดิน 80</button>
+        </div>
+
         <div class="field-group mt-20">
           <label class="field-label">ระดับความเหนื่อย</label>
           <div class="toggle-group">
@@ -2411,7 +2406,7 @@ function finishOnboard() {
   profile.startWeight = profile.startWeight || profile.weight;
   saveData();
   syncToSheets('save_profile', profile);
-  showSplash(function() { loadApp(); });
+  loadApp();
 }
 
 // ══════════════════════════════
@@ -2599,12 +2594,21 @@ function renderExerciseLogChecklist() {
 // ══════════════════════════════
 function setLogTab(tab) {
   currentLogTab = tab;
-  ['weight','food','bp','exercise'].forEach(t => {
+  ['weight','food','bp','exercise'].forEach(function(t) {
     document.getElementById('log-' + t).style.display = t === tab ? 'block' : 'none';
   });
-  document.querySelectorAll('.log-tab').forEach((btn, i) => {
+  document.querySelectorAll('.log-tab').forEach(function(btn, i) {
     btn.classList.toggle('active', ['weight','food','bp','exercise'][i] === tab);
   });
+  // Pre-fill steps + calBurn from saved data
+  if (tab === 'exercise') {
+    var key = getTodayKey();
+    var ex = logs.exercise[key] || {};
+    var stepsEl = document.getElementById('inp-steps');
+    var burnEl = document.getElementById('inp-cal-burn');
+    if (stepsEl && ex.steps) stepsEl.value = ex.steps;
+    if (burnEl && ex.calBurn) { burnEl.value = ex.calBurn; updateCalBurnDisplay(); }
+  }
   if (tab === 'food') updateCalDisplay();
 }
 
@@ -2765,21 +2769,20 @@ function addFood() {
 }
 
 function updateCalDisplay() {
-  const key = getTodayKey();
-  const dayFood = logs.food[key] || { breakfast: [], lunch: [], dinner: [], snack: [] };
-  const meals = ['breakfast','lunch','dinner','snack'];
-  const mealNames = { breakfast: 'เช้า', lunch: 'กลางวัน', dinner: 'เย็น', snack: 'Snacks' };
-  const calIds = { breakfast: 'cal-breakfast', lunch: 'cal-lunch', dinner: 'cal-dinner', snack: 'cal-snack' };
-  const itemIds = { breakfast: 'items-breakfast', lunch: 'items-lunch', dinner: 'items-dinner', snack: 'items-snack' };
+  var key = getTodayKey();
+  var dayFood = logs.food[key] || { breakfast: [], lunch: [], dinner: [], snack: [] };
+  var meals = ['breakfast','lunch','dinner','snack'];
+  var calIds = { breakfast: 'cal-breakfast', lunch: 'cal-lunch', dinner: 'cal-dinner', snack: 'cal-snack' };
+  var itemIds = { breakfast: 'items-breakfast', lunch: 'items-lunch', dinner: 'items-dinner', snack: 'items-snack' };
 
-  let total = 0;
-  meals.forEach(m => {
-    const items = dayFood[m] || [];
-    const mCal = items.reduce((s,f) => s + f.cal, 0);
+  var total = 0;
+  meals.forEach(function(m) {
+    var items = dayFood[m] || [];
+    var mCal = items.reduce(function(s,f){ return s + f.cal; }, 0);
     total += mCal;
-    const calEl = document.getElementById(calIds[m]);
+    var calEl = document.getElementById(calIds[m]);
     if (calEl) calEl.textContent = mCal + ' kcal';
-    const itemEl = document.getElementById(itemIds[m]);
+    var itemEl = document.getElementById(itemIds[m]);
     if (itemEl) {
       itemEl.innerHTML = items.map(function(f) {
         return '<div class="meal-item"><span class="meal-item-name">' + f.name + '</span><span class="meal-item-cal">' + f.cal + ' kcal</span></div>';
@@ -2787,14 +2790,19 @@ function updateCalDisplay() {
     }
   });
 
-  const target = profile.calTarget || 1850;
-  const remain = target - total;
-  const pct = Math.min(100, Math.round((total / target) * 100));
+  // หัก Cal ที่เผาผลาญจากออกกำลังกาย
+  var calBurn = (logs.exercise[key] && logs.exercise[key].calBurn) || 0;
+  var steps = (logs.exercise[key] && logs.exercise[key].steps) || 0;
+  var net = total - calBurn;
 
-  const calEaten = document.getElementById('cal-eaten');
-  const calRemain = document.getElementById('cal-remain');
-  const calGoalDisp = document.getElementById('cal-goal-disp');
-  const calBar = document.getElementById('cal-bar');
+  var target = profile.calTarget || 1850;
+  var remain = target - net;
+  var pct = Math.min(100, Math.round((net / target) * 100));
+
+  var calEaten = document.getElementById('cal-eaten');
+  var calRemain = document.getElementById('cal-remain');
+  var calGoalDisp = document.getElementById('cal-goal-disp');
+  var calBar = document.getElementById('cal-bar');
   if (calEaten) calEaten.textContent = total;
   if (calRemain) calRemain.textContent = Math.max(0, remain);
   if (calGoalDisp) calGoalDisp.textContent = target;
@@ -2803,9 +2811,28 @@ function updateCalDisplay() {
     calBar.className = 'cal-fill' + (pct > 105 ? ' over' : '');
   }
 
-  document.getElementById('stat-cal').textContent = total || '-';
-  document.getElementById('stat-cal-status').textContent = total ? (remain >= 0 ? 'เหลือ ' + remain : 'เกิน ' + Math.abs(remain)) : '-';
-  document.getElementById('stat-cal-status').className = 'stat-delta ' + (remain >= 0 ? 'ok' : 'up');
+  // แสดง cal burn + steps ถ้ามี
+  var statCal = document.getElementById('stat-cal');
+  var statCalStatus = document.getElementById('stat-cal-status');
+  if (statCal) statCal.textContent = net || total || '-';
+  if (statCalStatus) {
+    var statusText = '';
+    if (calBurn > 0) statusText = 'เผา -' + calBurn + (remain >= 0 ? ' | เหลือ ' + remain : ' | เกิน ' + Math.abs(remain));
+    else statusText = total ? (remain >= 0 ? 'เหลือ ' + remain : 'เกิน ' + Math.abs(remain)) : '-';
+    statCalStatus.textContent = statusText;
+    statCalStatus.className = 'stat-delta ' + (remain >= 0 ? 'ok' : 'up');
+  }
+
+  // แสดงก้าวบนหน้า home ถ้ามี
+  var stepsEl = document.getElementById('stat-steps');
+  if (stepsEl) {
+    stepsEl.textContent = steps ? steps.toLocaleString() : '-';
+    var stepsStatus = document.getElementById('stat-steps-status');
+    if (stepsStatus) {
+      stepsStatus.textContent = steps >= 10000 ? '✓ ครบแล้ว!' : steps >= 7000 ? 'เกือบครบ' : 'ยังไม่ครบ';
+      stepsStatus.className = 'stat-delta ' + (steps >= 10000 ? 'down' : steps >= 7000 ? 'ok' : 'up');
+    }
+  }
 }
 
 // ══════════════════════════════
@@ -2817,19 +2844,49 @@ function setRPE(n) {
 }
 
 function saveExercise() {
-  const key = getTodayKey();
+  var key = getTodayKey();
   if (!logs.exercise[key]) logs.exercise[key] = {};
   logs.exercise[key].rpe = currentRPE;
   logs.exercise[key].note = document.getElementById('exercise-note').value;
+  // Steps & cal burn
+  var steps = parseInt(document.getElementById('inp-steps').value) || 0;
+  var calBurn = parseInt(document.getElementById('inp-cal-burn').value) || 0;
+  logs.exercise[key].steps = steps;
+  logs.exercise[key].calBurn = calBurn;
   saveData();
+  // Update cal display to reflect burn
+  updateCalDisplay();
   showToast('✓ บันทึกแล้ว! กำลัง sync...');
-  // Sync ไป Sheets
   syncToSheets('save_exercise', {
     date: key,
-    ...logs.exercise[key],
+    steps: steps,
+    calBurn: calBurn,
+    rpe: currentRPE,
+    note: logs.exercise[key].note,
+    cardio: !!logs.exercise[key].cardio,
+    pt: !!logs.exercise[key].pt,
+    pilates: !!logs.exercise[key].pilates,
+    walk: !!logs.exercise[key].walk,
+    bp_morning: !!logs.exercise[key].bp_morning,
+    bp_evening: !!logs.exercise[key].bp_evening,
+    food_log: !!logs.exercise[key].food_log,
   }).then(ok => {
     showToast(ok ? '✓ บันทึก + sync แล้ว! 📊' : '✓ บันทึกแล้ว (offline)');
   });
+}
+
+function setCalBurn(val) {
+  document.getElementById('inp-cal-burn').value = val;
+  updateCalBurnDisplay();
+}
+
+function updateCalBurnDisplay() {
+  var burn = parseInt(document.getElementById('inp-cal-burn').value) || 0;
+  var hint = document.getElementById('cal-burn-hint');
+  if (hint) {
+    hint.textContent = burn > 0 ? 'Cal สุทธิ -' + burn + ' kcal' : 'ปรับได้ตามจริง';
+    hint.style.color = burn > 0 ? 'var(--green-700)' : '';
+  }
 }
 
 // ══════════════════════════════
@@ -3035,31 +3092,15 @@ window.addEventListener('load', () => {
     updateCalcs();
   }
 
-  // ถ้ามีข้อมูลพร้อม → ข้าม welcome ไปหน้าหลักเลย
+  // returning user → ข้ามทุกอย่าง ไปหน้าหลักเลย
   if (profile.name) {
     fillOnboardingFields();
-    document.getElementById('screen-welcome').classList.remove('active');
-    showSplash(function() { loadApp(); });
+    loadApp();
   }
-  // ถ้าไม่มีบัญชี → welcome screen แสดงอยู่แล้ว (default active ใน HTML)
+  // ใหม่ → welcome screen แสดงอยู่แล้ว
 });
 
-// ─── Splash screen สำหรับ returning user ───────────────
-function showSplash(callback) {
-  var splash = document.getElementById('screen-splash');
-  if (splash) {
-    var greet = document.getElementById('splash-greeting');
-    if (greet) {
-      var hour = new Date().getHours();
-      var timeGreet = hour < 12 ? 'สวัสดีตอนเช้า 🌿' : hour < 17 ? 'สวัสดีตอนบ่าย ☀️' : 'สวัสดีตอนเย็น 🌙';
-      greet.textContent = (profile.name || '') + ' ' + timeGreet;
-    }
-    goTo('screen-splash');
-    setTimeout(callback, 1400);
-  } else {
-    callback();
-  }
-}
+
 </script>
 </body>
 </html>
