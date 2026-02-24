@@ -761,11 +761,6 @@
 <!-- ═══════════════════════════════════
      SCREEN: WELCOME
 ═══════════════════════════════════ -->
-  <div class="splash-name">PIMOU</div>
-  <div class="splash-sub">Health Tracker</div>
-  <div class="splash-greeting" id="splash-greeting">ยินดีต้อนรับกลับ!</div>
-</div>
-
 <div class="screen active" id="screen-welcome">
   <div style="position:absolute;top:52px;right:24px;">
     <button id="welcome-lang-btn" onclick="toggleLangWelcome()" style="
@@ -788,7 +783,7 @@
   <button class="btn-primary" id="welcome-start-btn" onclick="goTo('screen-onboard'); setOnboardStep(1)">
     เริ่มต้นใช้งาน →
   </button>
-  <button class="btn-secondary" id="welcome-existing-btn" onclick="loadApp()">
+  <button class="btn-secondary" id="welcome-existing-btn" onclick="handleExistingUser()">
     มีบัญชีอยู่แล้ว
   </button>
 </div>
@@ -1291,31 +1286,33 @@
       <div id="log-exercise" style="display:none">
         <div id="exercise-checklist-log"></div>
 
-        <!-- Steps + Cal Burned row -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px;">
-          <div class="field-group" style="margin:0">
-            <label class="field-label">👟 ก้าววันนี้</label>
-            <input class="field-input" type="number" id="inp-steps" placeholder="เช่น 8500"
-              style="font-size:18px;font-weight:700;text-align:center;">
-            <div style="font-size:11px;color:var(--text-soft);margin-top:4px;text-align:center;">กรอกจากนาฬิกา</div>
+        <!-- Cal Burn from Watch -->
+        <div style="background:var(--green-50);border-radius:16px;padding:16px;margin-top:16px;border:1.5px solid var(--green-100);">
+          <div style="font-size:12px;font-weight:700;color:var(--green-700);margin-bottom:12px;letter-spacing:0.3px;">🔥 Cal เผาผลาญวันนี้ <span style="font-weight:400;color:var(--text-soft)">(จากนาฬิกา)</span></div>
+          <input class="field-input" type="number" id="inp-cal-burn" placeholder="0"
+            style="font-size:28px;font-weight:800;text-align:center;border:none;background:white;border-radius:12px;padding:12px;" oninput="updateCalBurnDisplay()">
+          <div style="font-size:12px;color:var(--green-700);text-align:center;margin-top:8px;font-weight:600;">
+            <span id="cal-burn-hint">กรอกตัวเลขรวมจากนาฬิกา</span>
           </div>
-          <div class="field-group" style="margin:0">
-            <label class="field-label">🔥 Cal เผาผลาญ</label>
-            <input class="field-input" type="number" id="inp-cal-burn" placeholder="0"
-              style="font-size:18px;font-weight:700;text-align:center;" oninput="updateCalBurnDisplay()">
-            <div style="font-size:11px;color:var(--text-soft);margin-top:4px;text-align:center;">
-              <span id="cal-burn-hint">ปรับได้ตามจริง</span>
-            </div>
+          <!-- Quick presets -->
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;justify-content:center;">
+            <button onclick="setCalBurn(200)" style="padding:6px 14px;border-radius:20px;border:1.5px solid var(--green-500);background:white;color:var(--green-700);font-size:12px;font-weight:600;cursor:pointer;">🏃 200</button>
+            <button onclick="setCalBurn(280)" style="padding:6px 14px;border-radius:20px;border:1.5px solid var(--green-500);background:white;color:var(--green-700);font-size:12px;font-weight:600;cursor:pointer;">🏃 280</button>
+            <button onclick="setCalBurn(150)" style="padding:6px 14px;border-radius:20px;border:1.5px solid var(--green-500);background:white;color:var(--green-700);font-size:12px;font-weight:600;cursor:pointer;">💪 150</button>
+            <button onclick="setCalBurn(220)" style="padding:6px 14px;border-radius:20px;border:1.5px solid var(--green-500);background:white;color:var(--green-700);font-size:12px;font-weight:600;cursor:pointer;">💪 220</button>
+            <button onclick="setCalBurn(80)" style="padding:6px 14px;border-radius:20px;border:1.5px solid var(--green-500);background:white;color:var(--green-700);font-size:12px;font-weight:600;cursor:pointer;">🚶 80</button>
           </div>
         </div>
 
-        <!-- Cal burn quick presets -->
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
-          <button onclick="setCalBurn(200)" style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--green-500);background:transparent;color:var(--green-700);font-size:12px;cursor:pointer;">Cardio 200</button>
-          <button onclick="setCalBurn(300)" style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--green-500);background:transparent;color:var(--green-700);font-size:12px;cursor:pointer;">Cardio 300</button>
-          <button onclick="setCalBurn(150)" style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--green-500);background:transparent;color:var(--green-700);font-size:12px;cursor:pointer;">Weight 150</button>
-          <button onclick="setCalBurn(250)" style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--green-500);background:transparent;color:var(--green-700);font-size:12px;cursor:pointer;">Weight 250</button>
-          <button onclick="setCalBurn(80)" style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--green-500);background:transparent;color:var(--green-700);font-size:12px;cursor:pointer;">เดิน 80</button>
+        <!-- Steps (Daily total) -->
+        <div style="background:var(--card);border-radius:16px;padding:14px 16px;margin-top:10px;border:1.5px solid var(--border);display:flex;align-items:center;gap:12px;">
+          <div style="font-size:28px;">👟</div>
+          <div style="flex:1;">
+            <div style="font-size:12px;color:var(--text-soft);margin-bottom:2px;">ก้าวรวมวันนี้ (จากนาฬิกา)</div>
+            <input type="number" id="inp-steps" placeholder="เช่น 8,500"
+              style="width:100%;border:none;background:transparent;font-size:18px;font-weight:700;color:var(--text);outline:none;padding:0;">
+          </div>
+          <div style="text-align:right;font-size:11px;color:var(--text-soft);">เป้า<br><b style="color:var(--green-700)">10,000</b></div>
         </div>
 
         <div class="field-group mt-20">
@@ -2224,6 +2221,22 @@ function goTo(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0,0);
+}
+
+function handleExistingUser() {
+  loadData();
+  if (profile.name) {
+    // มีข้อมูลในเครื่องนี้ → เข้าได้เลย
+    loadApp();
+  } else {
+    // ไม่มีข้อมูล → ถามชื่อก่อน แล้วเข้า
+    var name = prompt('กรอกชื่อเล่นเพื่อดึงข้อมูล (หรือกด Cancel เพื่อลงทะเบียนใหม่)');
+    if (name) {
+      profile.name = name.trim();
+      saveData();
+      loadApp();
+    }
+  }
 }
 
 function loadApp() {
