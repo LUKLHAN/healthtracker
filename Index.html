@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>PIMOU — Weight Loss Tracker</title>
+<meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="pragma" content="no-cache">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -2116,8 +2118,8 @@ function getWeekSchedule() {
   return WEEK_SCHEDULE_BASE.map((d, i) => ({ ...d, day: fulls[i], short: shorts[i] }));
 }
 
-// Keep legacy reference working
-Object.defineProperty(window, 'WEEK_SCHEDULE', { get: () => getWeekSchedule() });
+// Alias for convenience
+function WEEK_SCHEDULE_get() { return getWeekSchedule(); }
 
 let charts = {};
 
@@ -2324,7 +2326,7 @@ function updateCalcs() {
 function renderExerciseScheduleOnboard() {
   const wrap = document.getElementById('exercise-schedule');
   if (!wrap) return;
-  wrap.innerHTML = WEEK_SCHEDULE.map((d, i) => `
+  wrap.innerHTML = getWeekSchedule().map((d, i) => `
     <div style="background:var(--card);border-radius:14px;border:1.5px solid var(--border);padding:14px 16px;margin-bottom:8px;">
       <div style="font-size:13px;font-weight:700;color:var(--green-700);margin-bottom:6px;">${d.day}</div>
       <div style="font-size:12px;color:var(--text-mid);">🌅 เช้า: ${d.morning}</div>
@@ -2417,7 +2419,7 @@ function renderTodayChecklist() {
   const today = new Date().getDay(); // 0=Sun
   const dayMap = [6,0,1,2,3,4,5]; // Sun=6, Mon=0...
   const dayIdx = dayMap[today];
-  const sched = WEEK_SCHEDULE[dayIdx];
+  const sched = getWeekSchedule()[dayIdx];
   const key = getTodayKey();
   const todayEx = logs.exercise[key] || {};
 
@@ -2462,7 +2464,7 @@ function renderWeekDays() {
   const todayDay = today.getDay();
   const dayNames = ['อา','จ','อ','พ','พฤ','ศ','ส'];
 
-  wrap.innerHTML = WEEK_SCHEDULE.map((d, i) => {
+  wrap.innerHTML = getWeekSchedule().map((d, i) => {
     const jsDay = [1,2,3,4,5,6,0][i]; // Mon=1...Sun=0
     const isToday = jsDay === todayDay;
     const date = new Date(today);
@@ -2487,7 +2489,7 @@ function renderWeekDays() {
 function renderFullWeekPlan() {
   const wrap = document.getElementById('full-week-plan');
   if (!wrap) return;
-  wrap.innerHTML = WEEK_SCHEDULE.map(d => `
+  wrap.innerHTML = getWeekSchedule().map(d => `
     <div style="background:var(--card);border-radius:16px;border:1.5px solid var(--border);padding:16px;margin-bottom:10px;">
       <div style="font-size:14px;font-weight:700;color:var(--green-700);margin-bottom:8px;">${d.day}</div>
       <div style="font-size:12px;color:var(--text-mid);margin-bottom:3px;">🌅 เช้า — ${d.morning}</div>
@@ -2504,7 +2506,7 @@ function renderExerciseLogChecklist() {
   if (!wrap) return;
   const today = new Date().getDay();
   const dayMap = [6,0,1,2,3,4,5];
-  const sched = WEEK_SCHEDULE[dayMap[today]];
+  const sched = getWeekSchedule()[dayMap[today]];
   const key = getTodayKey();
   const todayEx = logs.exercise[key] || {};
 
