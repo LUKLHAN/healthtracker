@@ -2126,7 +2126,7 @@ let charts = {};
 // ══════════════════════════════
 // CONFIG — ใส่ URL Apps Script ที่นี่
 // ══════════════════════════════
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzehB4LqeBb2Bus-72h5DHDCCF14wwGrg1ph7OlULiMWgKnTnuDxH5Py5KiTkL74VCV1w/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxHG87VFMesL8gebR2KlyXWj_kVcjAnX1UR0Z1yb4VrdU5m3_pGcRAseLzZBo8sLh67gg/exec';
 
 // ══════════════════════════════
 // STORAGE — localStorage + Google Sheets sync
@@ -2326,13 +2326,15 @@ function updateCalcs() {
 function renderExerciseScheduleOnboard() {
   const wrap = document.getElementById('exercise-schedule');
   if (!wrap) return;
-  wrap.innerHTML = getWeekSchedule().map((d, i) => `
-    <div style="background:var(--card);border-radius:14px;border:1.5px solid var(--border);padding:14px 16px;margin-bottom:8px;">
-      <div style="font-size:13px;font-weight:700;color:var(--green-700);margin-bottom:6px;">${d.day}</div>
-      <div style="font-size:12px;color:var(--text-mid);">🌅 เช้า: ${d.morning}</div>
-      ${d.afternoon ? '<div style="font-size:12px;color:var(--text-mid);">☀️ บ่าย: ' + d.afternoon + '</div>' : ''}
-      <div style="font-size:12px;color:var(--text-mid);">🌆 เย็น: ${d.evening}</div>
-    </div>`).join('');
+  wrap.innerHTML = getWeekSchedule().map(function(d, i) {
+    var h = '<div style="background:var(--card);border-radius:14px;border:1.5px solid var(--border);padding:14px 16px;margin-bottom:8px;">';
+    h += '<div style="font-size:13px;font-weight:700;color:var(--green-700);margin-bottom:6px;">' + d.day + '</div>';
+    h += '<div style="font-size:12px;color:var(--text-mid);">🌅 เช้า: ' + d.morning + '</div>';
+    if (d.afternoon) h += '<div style="font-size:12px;color:var(--text-mid);">☀️ บ่าย: ' + d.afternoon + '</div>';
+    h += '<div style="font-size:12px;color:var(--text-mid);">🌆 เย็น: ' + d.evening + '</div>';
+    h += '</div>';
+    return h;
+  }).join('');
 }
 
 function finishOnboard() {
@@ -2435,13 +2437,13 @@ function renderTodayChecklist() {
   const wrap = document.getElementById('today-checklist');
   wrap.innerHTML = items.map(it => {
     const done = todayEx[it.id];
-    return `<div class="check-item ${done?'done':''}" id="ci-${it.id}" onclick="toggleChecklist('${it.id}')">
-      <div class="check-circle">${done ? '✓' : ''}</div>
-      <div class="check-info">
-        <div class="check-name">${it.icon} ${it.name}</div>
-        <div class="check-time">${it.time}</div>
-      </div>
-    </div>`;
+    var html = '<div class="check-item ' + (done?'done':'') + '" id="ci-' + it.id + '" onclick="toggleChecklist(\'' + it.id + '\')">';
+    html += '<div class="check-circle">' + (done ? '✓' : '') + '</div>';
+    html += '<div class="check-info">';
+    html += '<div class="check-name">' + it.icon + ' ' + it.name + '</div>';
+    html += '<div class="check-time">' + it.time + '</div>';
+    html += '</div></div>';
+    return html;
   }).join('');
 }
 
@@ -2474,12 +2476,13 @@ function renderWeekDays() {
     if (d.pt) icons.push('💪');
     if (d.pilates) icons.push('🧘');
     if (d.evening.includes('เดิน')) icons.push('🚶');
-    return `<div class="day-card ${isToday?'today':''}">
-      <div class="day-name">${d.short}</div>
-      <div class="day-num">${date.getDate()}</div>
-      <div class="day-icons">${icons.map(ic=>"<span class=\"day-icon\">" + ic + "</span>").join("")}</div>
-      ${isToday ? '<div class="day-dot"></div>' : ''}
-    </div>`;
+    var dayHtml = '<div class="day-card ' + (isToday?'today':'') + '">';
+    dayHtml += '<div class="day-name">' + d.short + '</div>';
+    dayHtml += '<div class="day-num">' + date.getDate() + '</div>';
+    dayHtml += '<div class="day-icons">' + icons.map(function(ic){ return '<span class="day-icon">' + ic + '</span>'; }).join('') + '</div>';
+    if (isToday) dayHtml += '<div class="day-dot"></div>';
+    dayHtml += '</div>';
+    return dayHtml;
   }).join('');
 }
 
@@ -2489,13 +2492,15 @@ function renderWeekDays() {
 function renderFullWeekPlan() {
   const wrap = document.getElementById('full-week-plan');
   if (!wrap) return;
-  wrap.innerHTML = getWeekSchedule().map(d => `
-    <div style="background:var(--card);border-radius:16px;border:1.5px solid var(--border);padding:16px;margin-bottom:10px;">
-      <div style="font-size:14px;font-weight:700;color:var(--green-700);margin-bottom:8px;">${d.day}</div>
-      <div style="font-size:12px;color:var(--text-mid);margin-bottom:3px;">🌅 เช้า — ${d.morning}</div>
-      ${d.afternoon ? '<div style="font-size:12px;color:var(--text-mid);margin-bottom:3px;">☀️ บ่าย — ' + d.afternoon + '</div>' : ''}
-      <div style="font-size:12px;color:var(--text-mid);">🌆 เย็น — ${d.evening}</div>
-    </div>`).join('');
+  wrap.innerHTML = getWeekSchedule().map(function(d) {
+    var h = '<div style="background:var(--card);border-radius:16px;border:1.5px solid var(--border);padding:16px;margin-bottom:10px;">';
+    h += '<div style="font-size:14px;font-weight:700;color:var(--green-700);margin-bottom:8px;">' + d.day + '</div>';
+    h += '<div style="font-size:12px;color:var(--text-mid);margin-bottom:3px;">🌅 เช้า — ' + d.morning + '</div>';
+    if (d.afternoon) h += '<div style="font-size:12px;color:var(--text-mid);margin-bottom:3px;">☀️ บ่าย — ' + d.afternoon + '</div>';
+    h += '<div style="font-size:12px;color:var(--text-mid);">🌆 เย็น — ' + d.evening + '</div>';
+    h += '</div>';
+    return h;
+  }).join('');
 }
 
 // ══════════════════════════════
@@ -2516,13 +2521,16 @@ function renderExerciseLogChecklist() {
   if (sched.pilates) items.push({ id: 'pilates', name: '🧘 Pilates' });
   if (sched.evening.includes('เดิน')) items.push({ id: 'walk', name: '🚶 เดินสวน' });
 
-  wrap.innerHTML = `<div style="margin-bottom:16px;">${items.map(it => {
-    const done = todayEx[it.id];
-    return `<div class="check-item ${done?'done':''}" onclick="toggleChecklist('${it.id}');renderExerciseLogChecklist()">
-      <div class="check-circle">${done?'✓':''}</div>
-      <div class="check-info"><div class="check-name">${it.name}</div></div>
-    </div>`;
-  }).join('')}</div>`;
+  var html = '<div style="margin-bottom:16px;">';
+  items.forEach(function(it) {
+    var done = todayEx[it.id];
+    html += '<div class="check-item ' + (done?'done':'') + '" onclick="toggleChecklist(\'' + it.id + '\');renderExerciseLogChecklist()">';
+    html += '<div class="check-circle">' + (done?'✓':'') + '</div>';
+    html += '<div class="check-info"><div class="check-name">' + it.name + '</div></div>';
+    html += '</div>';
+  });
+  html += '</div>';
+  wrap.innerHTML = html;
 }
 
 // ══════════════════════════════
@@ -2659,9 +2667,9 @@ function openFoodModal(meal) {
   document.getElementById('food-cal-input').value = '';
   document.getElementById('food-protein-input').value = '';
   const qf = document.getElementById('quick-foods-list');
-  qf.innerHTML = QUICK_FOODS.map(f =>
-    `<div class="quick-food" onclick="quickAddFood('${f.name}',${f.cal},${f.protein})">${f.name} <span style="opacity:0.7">${f.cal}</span></div>`
-  ).join('');
+  qf.innerHTML = QUICK_FOODS.map(function(f) {
+    return '<div class="quick-food" onclick="quickAddFood(\'' + f.name + '\',' + f.cal + ',' + f.protein + ')">' + f.name + ' <span style="opacity:0.7">' + f.cal + '</span></div>';
+  }).join('');
 }
 
 function closeFoodModal() {
@@ -2712,9 +2720,9 @@ function updateCalDisplay() {
     if (calEl) calEl.textContent = mCal + ' kcal';
     const itemEl = document.getElementById(itemIds[m]);
     if (itemEl) {
-      itemEl.innerHTML = items.map(f =>
-        `<div class="meal-item"><span class="meal-item-name">${f.name}</span><span class="meal-item-cal">${f.cal} kcal</span></div>`
-      ).join('');
+      itemEl.innerHTML = items.map(function(f) {
+        return '<div class="meal-item"><span class="meal-item-name">' + f.name + '</span><span class="meal-item-cal">' + f.cal + ' kcal</span></div>';
+      }).join('');
     }
   });
 
