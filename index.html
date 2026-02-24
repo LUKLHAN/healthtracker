@@ -2576,30 +2576,95 @@ function renderFullWeekPlan() {
 // EXERCISE LOG CHECKLIST
 // ══════════════════════════════
 function renderExerciseLogChecklist() {
-  const wrap = document.getElementById('exercise-checklist-log');
+  var wrap = document.getElementById('exercise-checklist-log');
   if (!wrap) return;
-  const today = new Date().getDay();
-  const dayMap = [6,0,1,2,3,4,5];
-  const sched = getWeekSchedule()[dayMap[today]];
-  const key = getTodayKey();
-  const todayEx = logs.exercise[key] || {};
+  var today = new Date().getDay();
+  var dayMap = [6,0,1,2,3,4,5];
+  var sched = getWeekSchedule()[dayMap[today]];
+  var key = getTodayKey();
+  var todayEx = logs.exercise[key] || {};
 
-  const items = [];
-  if (sched.morning.includes('Cardio')) items.push({ id: 'cardio', name: '🏃 Cardio + HIIT 30 นาที' });
-  if (sched.pt) items.push({ id: 'pt', name: '💪 PT at Gym 60 นาที' });
-  if (sched.pilates) items.push({ id: 'pilates', name: '🧘 Pilates' });
-  if (sched.evening.includes('เดิน')) items.push({ id: 'walk', name: '🚶 เดินสวน' });
+  var items = [];
+  if (sched.morning.includes('Cardio')) items.push({ id: 'cardio', name: 'Cardio + HIIT', icon: '🏃', defaultMin: 30 });
+  if (sched.pt)      items.push({ id: 'pt',      name: 'PT at Gym',    icon: '💪', defaultMin: 60 });
+  if (sched.pilates) items.push({ id: 'pilates',  name: 'Pilates',      icon: '🧘', defaultMin: 50 });
+  if (sched.evening.includes('เดิน')) items.push({ id: 'walk', name: 'เดินสวน', icon: '🚶', defaultMin: 30 });
 
-  var html = '<div style="margin-bottom:16px;">';
+  var html = '';
   items.forEach(function(it) {
-    var done = todayEx[it.id];
-    html += '<div class="check-item ' + (done?'done':'') + '" onclick="toggleChecklist(\'' + it.id + '\');renderExerciseLogChecklist()">';
-    html += '<div class="check-circle">' + (done?'✓':'') + '</div>';
-    html += '<div class="check-info"><div class="check-name">' + it.name + '</div></div>';
+    var done  = todayEx[it.id];
+    var dur   = todayEx[it.id + '_min']  || '';
+    var hr    = todayEx[it.id + '_hr']   || '';
+    var cal   = todayEx[it.id + '_cal']  || '';
+
+    html += '<div style="background:var(--card);border-radius:16px;border:1.5px solid ' + (done ? 'var(--green-500)' : 'var(--border)') + ';padding:14px 16px;margin-bottom:10px;transition:all 0.2s;">';
+    
+    // Header row — checkbox + name
+    html += '<div style="display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="toggleChecklist(\'' + it.id + '\');renderExerciseLogChecklist()">';
+    html += '<div style="width:24px;height:24px;border-radius:50%;border:2px solid ' + (done ? 'var(--green-500)' : 'var(--border)') + ';background:' + (done ? 'var(--green-500)' : 'transparent') + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;">';
+    html += done ? '<span style="color:white;font-size:13px;font-weight:700;">✓</span>' : '';
+    html += '</div>';
+    html += '<div style="flex:1;">';
+    html += '<div style="font-size:14px;font-weight:700;color:' + (done ? 'var(--green-700)' : 'var(--text)') + ';">' + it.icon + ' ' + it.name + '</div>';
+    html += '</div>';
+    html += '<div style="font-size:11px;color:' + (done ? 'var(--green-600)' : 'var(--text-soft)') + ';font-weight:600;">' + (done ? 'เสร็จแล้ว ✓' : 'แตะเพื่อทำเครื่องหมาย') + '</div>';
+    html += '</div>';
+
+    // Detail inputs row (always visible when done, collapsed when not)
+    html += '<div style="margin-top:' + (done ? '12' : '0') + 'px;overflow:hidden;max-height:' + (done ? '200px' : '0') + ';transition:max-height 0.3s ease;">';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding-top:4px;">';
+    
+    // Duration
+    html += '<div style="background:var(--green-50);border-radius:10px;padding:8px;text-align:center;">';
+    html += '<div style="font-size:10px;color:var(--text-soft);margin-bottom:3px;">⏱ นาที</div>';
+    html += '<input type="number" placeholder="' + it.defaultMin + '" value="' + dur + '" ';
+    html += 'onchange="saveActivityDetail(\'' + it.id + '\',\'min\',this.value)" ';
+    html += 'style="width:100%;border:none;background:transparent;font-size:16px;font-weight:700;text-align:center;color:var(--green-700);outline:none;">';
+    html += '</div>';
+    
+    // Heart Rate
+    html += '<div style="background:var(--green-50);border-radius:10px;padding:8px;text-align:center;">';
+    html += '<div style="font-size:10px;color:var(--text-soft);margin-bottom:3px;">❤️ HR เฉลี่ย</div>';
+    html += '<input type="number" placeholder="140" value="' + hr + '" ';
+    html += 'onchange="saveActivityDetail(\'' + it.id + '\',\'hr\',this.value)" ';
+    html += 'style="width:100%;border:none;background:transparent;font-size:16px;font-weight:700;text-align:center;color:var(--green-700);outline:none;">';
+    html += '</div>';
+    
+    // Cal burn this activity
+    html += '<div style="background:var(--green-50);border-radius:10px;padding:8px;text-align:center;">';
+    html += '<div style="font-size:10px;color:var(--text-soft);margin-bottom:3px;">🔥 Cal</div>';
+    html += '<input type="number" placeholder="?" value="' + cal + '" ';
+    html += 'onchange="saveActivityDetail(\'' + it.id + '\',\'cal\',this.value);updateTotalCalBurn()" ';
+    html += 'style="width:100%;border:none;background:transparent;font-size:16px;font-weight:700;text-align:center;color:var(--green-700);outline:none;">';
+    html += '</div>';
+    
+    html += '</div>';
+    html += '</div>';
     html += '</div>';
   });
-  html += '</div>';
+
   wrap.innerHTML = html;
+}
+
+function saveActivityDetail(activityId, field, value) {
+  var key = getTodayKey();
+  if (!logs.exercise[key]) logs.exercise[key] = {};
+  logs.exercise[key][activityId + '_' + field] = parseFloat(value) || 0;
+  saveData();
+}
+
+function updateTotalCalBurn() {
+  // รวม cal จากทุก activity อัตโนมัติ
+  var key = getTodayKey();
+  var ex = logs.exercise[key] || {};
+  var total = 0;
+  ['cardio','pt','pilates','walk'].forEach(function(id) {
+    total += ex[id + '_cal'] || 0;
+  });
+  if (total > 0) {
+    var burnEl = document.getElementById('inp-cal-burn');
+    if (burnEl) { burnEl.value = total; updateCalBurnDisplay(); }
+  }
 }
 
 // ══════════════════════════════
@@ -2621,6 +2686,7 @@ function setLogTab(tab) {
     var burnEl = document.getElementById('inp-cal-burn');
     if (stepsEl && ex.steps) stepsEl.value = ex.steps;
     if (burnEl && ex.calBurn) { burnEl.value = ex.calBurn; updateCalBurnDisplay(); }
+    renderExerciseLogChecklist();
   }
   if (tab === 'food') updateCalDisplay();
 }
