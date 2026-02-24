@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>PIMOU — Weight Loss Tracker</title>
+<!-- PIMOU_BUILD_v9 -->
 <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="pragma" content="no-cache">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2296,7 +2297,7 @@ function updateCalcs() {
   const months = parseFloat(document.getElementById('inp-months')?.value) || 6;
 
   if (!w || !h) return;
-  const bmi = (w / ((h / 100) ** 2)).toFixed(1);
+  const bmi = (w / Math.pow(h / 100, 2)).toFixed(1);
   const bmr = Math.round(calcBMR());
   const af = parseFloat(document.getElementById('inp-activity')?.value) || 1.55;
   const tdee = Math.round(bmr * af);
@@ -2380,12 +2381,12 @@ function updateAppUI() {
   document.getElementById('tag-cal').textContent = 'เป้า ' + (profile.calTarget || 1850) + ' kcal';
 
   // Stats
-  const bmi = cw && profile.height ? (cw / ((profile.height/100)**2)).toFixed(1) : '—';
-  document.getElementById('stat-weight').textContent = cw ? cw.toFixed(1) : '—';
+  const bmi = cw && profile.height ? (cw / Math.pow(profile.height/100, 2)).toFixed(1) : '-';
+  document.getElementById('stat-weight').textContent = cw ? cw.toFixed(1) : '-';
   document.getElementById('stat-bmi').textContent = bmi;
 
   const bmiNum = parseFloat(bmi);
-  let bmiCat = '—'; let bmiClass = 'ok';
+  let bmiCat = '-'; let bmiClass = 'ok';
   if (bmiNum > 30) { bmiCat = 'Obese'; bmiClass = 'up'; }
   else if (bmiNum > 25) { bmiCat = 'Overweight'; bmiClass = 'up'; }
   else if (bmiNum >= 18.5) { bmiCat = 'Normal'; bmiClass = 'down'; }
@@ -2395,9 +2396,9 @@ function updateAppUI() {
   // Update settings display
   if (profile.name) {
     const settingProfile = document.getElementById('set-profile-val');
-    if (settingProfile) settingProfile.textContent = profile.name + ', ' + (profile.age||'—') + 'ปี';
+    if (settingProfile) settingProfile.textContent = profile.name + ', ' + (profile.age||'-') + 'ปี';
     const settingGoal = document.getElementById('set-goal-val');
-    if (settingGoal) settingGoal.textContent = 'เป้า ' + (profile.goalWeight||'—') + ' kg';
+    if (settingGoal) settingGoal.textContent = 'เป้า ' + (profile.goalWeight||'-') + ' kg';
     if (profile.lineToken) {
       const settingLine = document.getElementById('set-line-val');
       if (settingLine) settingLine.textContent = 'เชื่อมต่อแล้ว ✓';
@@ -2578,11 +2579,11 @@ function updateWeightDisplay() {
   const cw = getLatestWeight();
   const gw = profile.goalWeight || 72;
   const sw = profile.startWeight || profile.weight || 92;
-  document.getElementById('disp-current-weight').textContent = cw ? cw.toFixed(1) : '—';
+  document.getElementById('disp-current-weight').textContent = cw ? cw.toFixed(1) : '-';
   document.getElementById('disp-goal-weight').textContent = gw;
-  document.getElementById('disp-lost').textContent = cw ? Math.max(0, sw - cw).toFixed(1) : '—';
+  document.getElementById('disp-lost').textContent = cw ? Math.max(0, sw - cw).toFixed(1) : '-';
 
-  document.getElementById('stat-weight').textContent = cw ? cw.toFixed(1) : '—';
+  document.getElementById('stat-weight').textContent = cw ? cw.toFixed(1) : '-';
   if (logs.weights.length >= 2) {
     const prev = logs.weights[logs.weights.length - 2].weight;
     const diff = (cw - prev).toFixed(1);
@@ -2591,11 +2592,11 @@ function updateWeightDisplay() {
     el.className = 'stat-delta ' + (diff <= 0 ? 'down' : 'up');
   }
 
-  const bmi = cw && profile.height ? (cw / ((profile.height/100)**2)).toFixed(1) : '—';
+  const bmi = cw && profile.height ? (cw / Math.pow(profile.height/100, 2)).toFixed(1) : '-';
   document.getElementById('stat-bmi').textContent = bmi;
   document.getElementById('ws-start').textContent = sw + ' kg';
   document.getElementById('ws-current').textContent = (cw || sw) + ' kg';
-  document.getElementById('ws-lost').textContent = cw ? (sw - cw).toFixed(1) + ' kg' : '—';
+  document.getElementById('ws-lost').textContent = cw ? (sw - cw).toFixed(1) + ' kg' : '-';
   document.getElementById('ws-bmi').textContent = bmi;
 }
 
@@ -2633,14 +2634,14 @@ function saveBP() {
 }
 
 function updateBPDisplay(entry) {
-  const avg = (a, b) => (a && b) ? Math.round((a + b) / 2) : (a || b || '—');
+  const avg = (a, b) => (a && b) ? Math.round((a + b) / 2) : (a || b || '-');
   const mSys = avg(entry?.m1?.sys, entry?.m2?.sys);
   const mDia = avg(entry?.m1?.dia, entry?.m2?.dia);
   const eSys = avg(entry?.e1?.sys, entry?.e2?.sys);
   const eDia = avg(entry?.e1?.dia, entry?.e2?.dia);
 
-  document.getElementById('bp-morning-avg').textContent = mSys !== '—' ? mSys + '/' + mDia : '—/—';
-  document.getElementById('bp-evening-avg').textContent = eSys !== '—' ? eSys + '/' + eDia : '—/—';
+  document.getElementById('bp-morning-avg').textContent = mSys !== '-' ? mSys + '/' + mDia : '—/—';
+  document.getElementById('bp-evening-avg').textContent = eSys !== '-' ? eSys + '/' + eDia : '—/—';
 
   const allSys = [entry?.m1?.sys, entry?.m2?.sys, entry?.e1?.sys, entry?.e2?.sys].filter(Boolean);
   const allDia = [entry?.m1?.dia, entry?.m2?.dia, entry?.e1?.dia, entry?.e2?.dia].filter(Boolean);
@@ -2742,8 +2743,8 @@ function updateCalDisplay() {
     calBar.className = 'cal-fill' + (pct > 105 ? ' over' : '');
   }
 
-  document.getElementById('stat-cal').textContent = total || '—';
-  document.getElementById('stat-cal-status').textContent = total ? (remain >= 0 ? 'เหลือ ' + remain : 'เกิน ' + Math.abs(remain)) : '—';
+  document.getElementById('stat-cal').textContent = total || '-';
+  document.getElementById('stat-cal-status').textContent = total ? (remain >= 0 ? 'เหลือ ' + remain : 'เกิน ' + Math.abs(remain)) : '-';
   document.getElementById('stat-cal-status').className = 'stat-delta ' + (remain >= 0 ? 'ok' : 'up');
 }
 
