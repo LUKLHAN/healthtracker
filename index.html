@@ -2126,7 +2126,7 @@ let charts = {};
 // ══════════════════════════════
 // CONFIG — ใส่ URL Apps Script ที่นี่
 // ══════════════════════════════
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxHG87VFMesL8gebR2KlyXWj_kVcjAnX1UR0Z1yb4VrdU5m3_pGcRAseLzZBo8sLh67gg/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzehB4LqeBb2Bus-72h5DHDCCF14wwGrg1ph7OlULiMWgKnTnuDxH5Py5KiTkL74VCV1w/exec';
 
 // ══════════════════════════════
 // STORAGE — localStorage + Google Sheets sync
@@ -2330,7 +2330,7 @@ function renderExerciseScheduleOnboard() {
     <div style="background:var(--card);border-radius:14px;border:1.5px solid var(--border);padding:14px 16px;margin-bottom:8px;">
       <div style="font-size:13px;font-weight:700;color:var(--green-700);margin-bottom:6px;">${d.day}</div>
       <div style="font-size:12px;color:var(--text-mid);">🌅 เช้า: ${d.morning}</div>
-      ${d.afternoon ? `<div style="font-size:12px;color:var(--text-mid);">☀️ บ่าย: ${d.afternoon}</div>` : ''}
+      ${d.afternoon ? '<div style="font-size:12px;color:var(--text-mid);">☀️ บ่าย: ' + d.afternoon + '</div>' : ''}
       <div style="font-size:12px;color:var(--text-mid);">🌆 เย็น: ${d.evening}</div>
     </div>`).join('');
 }
@@ -2477,7 +2477,7 @@ function renderWeekDays() {
     return `<div class="day-card ${isToday?'today':''}">
       <div class="day-name">${d.short}</div>
       <div class="day-num">${date.getDate()}</div>
-      <div class="day-icons">${icons.map(ic=>`<span class="day-icon">${ic}</span>`).join('')}</div>
+      <div class="day-icons">${icons.map(ic=>"<span class=\"day-icon\">" + ic + "</span>").join("")}</div>
       ${isToday ? '<div class="day-dot"></div>' : ''}
     </div>`;
   }).join('');
@@ -2493,7 +2493,7 @@ function renderFullWeekPlan() {
     <div style="background:var(--card);border-radius:16px;border:1.5px solid var(--border);padding:16px;margin-bottom:10px;">
       <div style="font-size:14px;font-weight:700;color:var(--green-700);margin-bottom:8px;">${d.day}</div>
       <div style="font-size:12px;color:var(--text-mid);margin-bottom:3px;">🌅 เช้า — ${d.morning}</div>
-      ${d.afternoon ? `<div style="font-size:12px;color:var(--text-mid);margin-bottom:3px;">☀️ บ่าย — ${d.afternoon}</div>` : ''}
+      ${d.afternoon ? '<div style="font-size:12px;color:var(--text-mid);margin-bottom:3px;">☀️ บ่าย — ' + d.afternoon + '</div>' : ''}
       <div style="font-size:12px;color:var(--text-mid);">🌆 เย็น — ${d.evening}</div>
     </div>`).join('');
 }
