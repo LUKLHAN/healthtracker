@@ -749,6 +749,42 @@
   }
   .toast.show { display: block; animation: toastIn 0.3s ease; }
   @keyframes toastIn { from { opacity:0; top:40px; } to { opacity:1; top:60px; } }
+
+  /* ─── Splash Screen ─────────────────────────────── */
+  #screen-splash {
+    background: linear-gradient(160deg, var(--green-900) 0%, var(--green-700) 55%, var(--green-500) 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+  }
+  #screen-splash .splash-logo {
+    font-size: 64px;
+    animation: splashPulse 1s ease-in-out infinite alternate;
+  }
+  #screen-splash .splash-name {
+    font-size: 28px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: 3px;
+  }
+  #screen-splash .splash-sub {
+    font-size: 13px;
+    color: rgba(255,255,255,0.7);
+    letter-spacing: 1px;
+  }
+  #screen-splash .splash-greeting {
+    font-size: 15px;
+    color: rgba(255,255,255,0.9);
+    font-weight: 600;
+    margin-top: 8px;
+  }
+  @keyframes splashPulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.1); }
+  }
+
 </style>
 </head>
 <body>
@@ -759,6 +795,16 @@
 <!-- ═══════════════════════════════════
      SCREEN: WELCOME
 ═══════════════════════════════════ -->
+<!-- ═══════════════════════════════════
+     SCREEN: SPLASH (Returning User)
+═══════════════════════════════════ -->
+<div class="screen" id="screen-splash">
+  <div class="splash-logo">🌿</div>
+  <div class="splash-name">PIMOU</div>
+  <div class="splash-sub">Health Tracker</div>
+  <div class="splash-greeting" id="splash-greeting">ยินดีต้อนรับกลับ!</div>
+</div>
+
 <div class="screen active" id="screen-welcome">
   <div style="position:absolute;top:52px;right:24px;">
     <button id="welcome-lang-btn" onclick="toggleLangWelcome()" style="
@@ -2188,6 +2234,7 @@ function goTo(id) {
 function loadApp() {
   loadData();
   goTo('screen-app');
+  setTab('home');
   updateAppUI();
   renderWeekDays();
   renderTodayChecklist();
@@ -2231,10 +2278,20 @@ function setOnboardStep(n) {
 }
 
 function nextStep(n) {
-  if (n > currentStep) {
-    // Save data when moving forward
-    if (currentStep === 1) saveStep1();
-    if (currentStep === 2) saveStep2();
+  // Validate step 1
+  if (currentStep === 1 && n > 1) {
+    var name = document.getElementById('inp-name').value.trim();
+    var weight = document.getElementById('inp-weight').value;
+    var height = document.getElementById('inp-height').value;
+    if (!name) { showToast('⚠️ กรุณากรอกชื่อเล่น'); return; }
+    if (!weight) { showToast('⚠️ กรุณากรอกน้ำหนัก'); return; }
+    if (!height) { showToast('⚠️ กรุณากรอกส่วนสูง'); return; }
+    saveStep1();
+  }
+  if (currentStep === 2 && n > 2) {
+    var goalWeight = document.getElementById('inp-goal-weight').value;
+    if (!goalWeight) { showToast('⚠️ กรุณากรอกน้ำหนักเป้าหมาย'); return; }
+    saveStep2();
   }
   setOnboardStep(n);
 }
@@ -2339,19 +2396,22 @@ function renderExerciseScheduleOnboard() {
 }
 
 function finishOnboard() {
-  saveStep1(); saveStep2();
+  saveStep1();
+  saveStep2();
   profile.lineToken = document.getElementById('inp-line-token').value;
   profile.lineName = document.getElementById('inp-line-name').value || profile.name;
   profile.notifTimes = {
-    morning: document.getElementById('notif-morning').value,
-    noon: document.getElementById('notif-noon').value,
-    evening: document.getElementById('notif-evening').value,
-    night: document.getElementById('notif-night').value,
+    morning: document.getElementById('notif-morning').value || '06:00',
+    noon: document.getElementById('notif-noon').value || '12:00',
+    evening: document.getElementById('notif-evening').value || '18:00',
+    night: document.getElementById('notif-night').value || '21:00',
   };
+  // Ensure critical fields always set
+  profile.startDate = profile.startDate || new Date().toISOString().split('T')[0];
+  profile.startWeight = profile.startWeight || profile.weight;
   saveData();
-  // Sync profile ไป Google Sheets
   syncToSheets('save_profile', profile);
-  loadApp();
+  showSplash(function() { loadApp(); });
 }
 
 // ══════════════════════════════
@@ -2956,26 +3016,50 @@ function applyDataI18n() {
 // ══════════════════════════════
 window.addEventListener('load', () => {
   loadData();
-  // Apply language
   applyDataI18n();
   refreshWelcomeText();
 
-  // Fill onboarding with existing profile if available
-  if (profile.name) {
-    document.getElementById('inp-name').value = profile.name || '';
-    document.getElementById('inp-age').value = profile.age || '';
-    document.getElementById('inp-height').value = profile.height || '';
-    document.getElementById('inp-weight').value = profile.weight || '';
+  // Pre-fill onboarding fields from saved profile
+  function fillOnboardingFields() {
+    if (profile.name) document.getElementById('inp-name').value = profile.name;
+    if (profile.age) document.getElementById('inp-age').value = profile.age;
+    if (profile.height) document.getElementById('inp-height').value = profile.height;
+    if (profile.weight) document.getElementById('inp-weight').value = profile.weight;
     if (profile.gender) { gender = profile.gender; setGender(gender); }
     if (profile.goalWeight) document.getElementById('inp-goal-weight').value = profile.goalWeight;
     if (profile.months) document.getElementById('inp-months').value = profile.months;
+    if (profile.activityFactor) document.getElementById('inp-activity').value = profile.activityFactor;
+    if (profile.calTarget) document.getElementById('inp-cal-target').value = profile.calTarget;
+    if (profile.lineToken) document.getElementById('inp-line-token').value = profile.lineToken;
+    if (profile.lineName) document.getElementById('inp-line-name').value = profile.lineName;
     updateCalcs();
   }
-  // Auto-load if returning user
-  if (profile.name && profile.startDate) {
-    loadApp();
+
+  // ถ้ามีข้อมูลพร้อม → ข้าม welcome ไปหน้าหลักเลย
+  if (profile.name) {
+    fillOnboardingFields();
+    document.getElementById('screen-welcome').classList.remove('active');
+    showSplash(function() { loadApp(); });
   }
+  // ถ้าไม่มีบัญชี → welcome screen แสดงอยู่แล้ว (default active ใน HTML)
 });
+
+// ─── Splash screen สำหรับ returning user ───────────────
+function showSplash(callback) {
+  var splash = document.getElementById('screen-splash');
+  if (splash) {
+    var greet = document.getElementById('splash-greeting');
+    if (greet) {
+      var hour = new Date().getHours();
+      var timeGreet = hour < 12 ? 'สวัสดีตอนเช้า 🌿' : hour < 17 ? 'สวัสดีตอนบ่าย ☀️' : 'สวัสดีตอนเย็น 🌙';
+      greet.textContent = (profile.name || '') + ' ' + timeGreet;
+    }
+    goTo('screen-splash');
+    setTimeout(callback, 1400);
+  } else {
+    callback();
+  }
+}
 </script>
 </body>
 </html>
