@@ -2178,10 +2178,47 @@ function saveData() {
 }
 
 function loadData() {
-  const p = localStorage.getItem('pimou_profile');
-  const l = localStorage.getItem('pimou_logs');
+  var p = localStorage.getItem('pimou_profile');
+  var l = localStorage.getItem('pimou_logs');
   if (p) profile = JSON.parse(p);
-  if (l) logs = JSON.parse(l);
+  if (l) {
+    logs = JSON.parse(l);
+    migrateLogs();
+  }
+}
+
+function migrateLogs() {
+  // ── ตรวจ food structure ──────────────────────────────
+  // ถ้า logs.food เป็น flat {breakfast:[]} แทนที่จะเป็น {'2026-02-26':{breakfast:[]}}
+  // ให้ migrate ไปเก็บใน key ของวันนั้น
+  if (logs.food && logs.food.breakfast && Array.isArray(logs.food.breakfast)) {
+    var oldFood = logs.food;
+    logs.food = {};
+    // ใส่ข้อมูลเก่าไว้ใน key ของเมื่อวาน (เดาว่ามาจากวันก่อน)
+    var yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+    var yk = yesterday.getFullYear() + '-' + String(yesterday.getMonth()+1).padStart(2,'0') + '-' + String(yesterday.getDate()).padStart(2,'0');
+    if (oldFood.breakfast.length || oldFood.lunch.length || oldFood.dinner.length) {
+      logs.food[yk] = oldFood;
+    }
+    saveData();
+    console.log('[PIMOU] Migrated flat food → keyed by date');
+  }
+  // ── ตรวจ exercise structure ──────────────────────────
+  // ถ้า logs.exercise มี key ที่ไม่ใช่ date format (YYYY-MM-DD)
+  if (logs.exercise) {
+    var validEx = {};
+    Object.keys(logs.exercise).forEach(function(k) {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(k)) {
+        validEx[k] = logs.exercise[k];
+      }
+    });
+    logs.exercise = validEx;
+  }
+  // ── ensure arrays ────────────────────────────────────
+  if (!Array.isArray(logs.weights)) logs.weights = [];
+  if (!Array.isArray(logs.bp)) logs.bp = [];
+  if (!logs.food || typeof logs.food !== 'object') logs.food = {};
+  if (!logs.exercise || typeof logs.exercise !== 'object') logs.exercise = {};
 }
 
 /** POST ไป Apps Script */
@@ -2480,7 +2517,12 @@ function getLatestWeight() {
 }
 
 function getTodayKey() {
-  return new Date().toISOString().split('T')[0];
+  // ใช้ local time (ไม่ใช่ UTC) เพื่อให้ key ถูกต้องในทุก timezone
+  var d = new Date();
+  var y = d.getFullYear();
+  var m = String(d.getMonth() + 1).padStart(2, '0');
+  var day = String(d.getDate()).padStart(2, '0');
+  return y + '-' + m + '-' + day;
 }
 
 // ══════════════════════════════
@@ -3025,7 +3067,8 @@ function renderCalChart() {
   const target = profile.calTarget || 1850;
   for (let i = days-1; i >= 0; i--) {
     const d = new Date(); d.setDate(d.getDate() - i);
-    const key = d.toISOString().split('T')[0];
+    const y2 = d.getFullYear(), m2 = String(d.getMonth()+1).padStart(2,'0'), d2 = String(d.getDate()).padStart(2,'0');
+    const key = y2 + '-' + m2 + '-' + d2;
     labels.push(key.slice(5));
     const dayFood = logs.food[key];
     const total = dayFood ? Object.values(dayFood).flat().reduce((s,f)=>s+f.cal,0) : 0;
@@ -3155,6 +3198,25 @@ window.addEventListener('load', () => {
   applyDataI18n();
   refreshWelcomeText();
 
+  // ── Daily refresh: ถ้าวันเปลี่ยน reload checklist + UI ──
+  var _lastDay = getTodayKey();
+  setInterval(function() {
+    var today = getTodayKey();
+    if (today !== _lastDay) {
+      _lastDay = today;
+      renderTodayChecklist();
+      renderWeekDays();
+      renderExerciseLogChecklist();
+      updateCalDisplay();
+      updateWeightDisplay();
+      var stepsEl = document.getElementById('inp-steps');
+      var burnEl = document.getElementById('inp-cal-burn');
+      if (stepsEl) stepsEl.value = '';
+      if (burnEl) burnEl.value = '';
+      showToast('🌅 เริ่มวันใหม่แล้ว!');
+    }
+  }, 60000); // check ทุก 1 นาที
+
   // Pre-fill onboarding fields from saved profile
   function fillOnboardingFields() {
     if (profile.name) document.getElementById('inp-name').value = profile.name;
@@ -3177,6 +3239,29 @@ window.addEventListener('load', () => {
     loadApp();
   }
   // ใหม่ → welcome screen แสดงอยู่แล้ว
+});
+
+// ── AUTO REFRESH เมื่อกลับมาใช้แอปวันใหม่ ────────────────
+var lastRenderedDay = getTodayKey();
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden) {
+    var currentDay = getTodayKey();
+    if (currentDay !== lastRenderedDay && profile.name) {
+      lastRenderedDay = currentDay;
+      // วันใหม่ → refresh ทุก UI
+      renderTodayChecklist();
+      renderWeekDays();
+      renderExerciseLogChecklist();
+      updateCalDisplay();
+      updateAppUI();
+      // clear exercise inputs สำหรับวันใหม่
+      var stepsEl = document.getElementById('inp-steps');
+      var burnEl  = document.getElementById('inp-cal-burn');
+      if (stepsEl) stepsEl.value = '';
+      if (burnEl)  burnEl.value  = '';
+      updateCalBurnDisplay();
+    }
+  }
 });
 
 
